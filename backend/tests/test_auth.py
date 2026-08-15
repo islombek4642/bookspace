@@ -1,6 +1,6 @@
 from tests.telegram_test_utils import build_init_data
 
-BOT_TOKEN = "test-bot-token"
+BOT_TOKEN = "111111:test-bot-token"
 
 
 async def test_telegram_auth_creates_user_and_returns_token(client):

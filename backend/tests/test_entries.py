@@ -98,7 +98,7 @@ async def test_get_entry_returns_404_for_another_users_entry(client, auth_header
 
     from tests.telegram_test_utils import build_init_data
 
-    other_init_data = build_init_data("test-bot-token", {"id": 424242, "username": "boshqa_foydalanuvchi"})
+    other_init_data = build_init_data("111111:test-bot-token", {"id": 424242, "username": "boshqa_foydalanuvchi"})
     other_auth = await client.post("/auth/telegram", json={"init_data": other_init_data})
     other_headers = {"Authorization": f"Bearer {other_auth.json()['access_token']}"}
 

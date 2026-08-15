@@ -1,7 +1,7 @@
 import os
 
 os.environ.setdefault("DATABASE_URL", "sqlite+aiosqlite:///:memory:")
-os.environ.setdefault("BOT_TOKEN", "test-bot-token")
+os.environ.setdefault("BOT_TOKEN", "111111:test-bot-token")
 os.environ.setdefault("JWT_SECRET", "test-secret")
 
 import pytest_asyncio
@@ -50,7 +50,7 @@ async def client(db_session):
 async def auth_headers(client):
     from tests.telegram_test_utils import build_init_data
 
-    init_data = build_init_data("test-bot-token", {"id": 777, "username": "tester"})
+    init_data = build_init_data("111111:test-bot-token", {"id": 777, "username": "tester"})
     response = await client.post("/auth/telegram", json={"init_data": init_data})
     token = response.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
