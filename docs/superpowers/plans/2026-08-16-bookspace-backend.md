@@ -799,7 +799,7 @@ Expected: FAIL with `ModuleNotFoundError: No module named 'app.modules'`
 # backend/app/modules/users/models.py
 from datetime import date, datetime
 
-from sqlalchemy import Date, DateTime, ForeignKey, Integer, String, Text, func
+from sqlalchemy import BigInteger, Date, DateTime, ForeignKey, Integer, String, Text, func
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -809,7 +809,7 @@ class User(Base):
     __tablename__ = "users"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    telegram_id: Mapped[int] = mapped_column(Integer, unique=True, index=True)
+    telegram_id: Mapped[int] = mapped_column(BigInteger, unique=True, index=True)
     username: Mapped[str | None] = mapped_column(String(255), nullable=True)
     display_name: Mapped[str | None] = mapped_column(String(255), nullable=True)
     avatar_url: Mapped[str | None] = mapped_column(String(1024), nullable=True)
@@ -3067,7 +3067,7 @@ def upgrade() -> None:
     op.create_table(
         "users",
         sa.Column("id", sa.Integer, primary_key=True),
-        sa.Column("telegram_id", sa.Integer, unique=True, nullable=False, index=True),
+        sa.Column("telegram_id", sa.BigInteger, unique=True, nullable=False, index=True),
         sa.Column("username", sa.String(255), nullable=True),
         sa.Column("display_name", sa.String(255), nullable=True),
         sa.Column("avatar_url", sa.String(1024), nullable=True),
