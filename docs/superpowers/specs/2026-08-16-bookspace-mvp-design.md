@@ -142,7 +142,7 @@ Aniq piksel-darajasidagi dizayn implementatsiya paytida `frontend-design` skill 
 Server allaqachon `D:\QuizBot` loyihasi uchun global **`nginx-proxy` + `acme-companion`** (Let's Encrypt) konteynerlarini ishlatadi, umumiy `proxy_network` orqali. Yangi loyiha shu infratuzilmani qayta ishlatadi:
 
 - `docker-compose.yml` da `api` xizmati `proxy_network`ga qo'shiladi, `VIRTUAL_HOST`, `VIRTUAL_PORT`, `LETSENCRYPT_HOST`, `LETSENCRYPT_EMAIL` environment o'zgaruvchilari beriladi — SSL sertifikat avtomatik olinadi va yangilanadi, qo'lda certbot buyrug'i kerak emas.
-- Xizmatlar: `api` (FastAPI + aiogram webhook), `db` (PostgreSQL), frontend statik build `api` orqali yoki alohida beriladi.
+- Xizmatlar: faqat ikkita konteyner — `api` (FastAPI + aiogram webhook, va React'ning statik build natijasini ham o'zi `StaticFiles` orqali uzatadi) va `db` (PostgreSQL). Bitta domen uchun alohida frontend-server konteyneri ortiqcha murakkablik hisoblanadi.
 - Migratsiyalar: Alembic (`alembic upgrade head`), QuizBot'dagi kabi deploy skripti ichida avtomatik ishga tushadi.
 - Deploy skripti QuizBot'dagi `scripts/deploy.sh` namunasi asosida moslashtiriladi: backup → git pull → rebuild → migratsiya → health check → webhook o'rnatish.
 - Redis, PgBouncer, worker/scheduler kabi qo'shimchalar MVP uchun **kiritilmaydi** — background job yoki yuqori yuklama hozircha yo'q, kerak bo'lganda keyinchalik qo'shiladi.
