@@ -1,0 +1,10 @@
+{
+  "bot.start.welcome": "Xush kelibsiz! Kutubxonangizni ochish uchun tugmani bosing.",
+  "bot.start.button": "Kutubxonamni ochish",
+  "error.invalid_telegram_signature": "Telegram imzosi noto'g'ri.",
+  "error.session_expired": "Sessiya eskirgan, ilovani qayta oching.",
+  "error.book_not_found": "Kitob topilmadi.",
+  "error.validation_error": "Kiritilgan ma'lumotlar noto'g'ri.",
+  "error.entry_not_found": "Yozuv topilmadi.",
+  "error.quote_not_found": "Iqtibos topilmadi."
+}
