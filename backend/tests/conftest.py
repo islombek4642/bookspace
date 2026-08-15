@@ -44,3 +44,13 @@ async def client(db_session):
     transport = ASGITransport(app=fastapi_app)
     async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
+
+
+@pytest_asyncio.fixture
+async def auth_headers(client):
+    from tests.telegram_test_utils import build_init_data
+
+    init_data = build_init_data("test-bot-token", {"id": 777, "username": "tester"})
+    response = await client.post("/auth/telegram", json={"init_data": init_data})
+    token = response.json()["access_token"]
+    return {"Authorization": f"Bearer {token}"}
