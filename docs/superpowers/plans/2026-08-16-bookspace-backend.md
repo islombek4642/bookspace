@@ -1405,6 +1405,27 @@ async def test_create_manual_book(client, auth_headers):
     body = response.json()
     assert body["source"] == "manual"
     assert body["title"] == "Mening kitobim"
+
+
+async def test_get_book_by_id(client, auth_headers):
+    create_response = await client.post(
+        "/catalog/books/manual",
+        headers=auth_headers,
+        json={"title": "Sariq devni minib", "author": "Xudoyberdi To'xtaboyev", "cover_url": None},
+    )
+    book_id = create_response.json()["id"]
+
+    response = await client.get(f"/catalog/books/{book_id}")
+
+    assert response.status_code == 200
+    assert response.json()["title"] == "Sariq devni minib"
+
+
+async def test_get_book_by_id_returns_404_when_missing(client):
+    response = await client.get("/catalog/books/999999")
+
+    assert response.status_code == 404
+    assert response.json()["error_key"] == "error.book_not_found"
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -1484,9 +1505,18 @@ async def create(db: AsyncSession, **fields) -> Book:
 import httpx
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.errors import AppError
+from app.locale import t
 from app.modules.catalog import repository
 from app.modules.catalog.google_books_client import GoogleBooksResult, search_books
 from app.modules.catalog.models import Book
+
+
+async def get_book(db: AsyncSession, book_id: int) -> Book:
+    book = await repository.get_by_id(db, book_id)
+    if book is None:
+        raise AppError("error.book_not_found", t("error.book_not_found"), status_code=404)
+    return book
 
 
 async def search_catalog(query: str) -> list[GoogleBooksResult]:
@@ -1555,6 +1585,11 @@ async def search(q: str):
     return [BookSearchResult(**vars(r)) for r in results]
 
 
+@router.get("/books/{book_id}", response_model=BookOut)
+async def get_book(book_id: int, db: AsyncSession = Depends(get_db)):
+    return await service.get_book(db, book_id)
+
+
 @router.post("/books/from-search", response_model=BookOut)
 async def create_from_search(payload: BookCreateFromSearch, db: AsyncSession = Depends(get_db)):
     book = await service.get_or_create_from_search(
@@ -1583,7 +1618,7 @@ app.include_router(catalog_router)
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_catalog.py -v`
-Expected: PASS (4 tests)
+Expected: PASS (6 tests)
 
 - [ ] **Step 5: Commit**
 
@@ -1688,6 +1723,37 @@ async def test_list_entries_filters_favorites(client, auth_headers):
 
     assert len(all_entries.json()) == 2
     assert len(favorites_only.json()) == 1
+
+
+async def test_get_entry_returns_full_detail(client, auth_headers):
+    book_id = await _create_book(client, auth_headers)
+    create_response = await client.post(
+        "/entries", headers=auth_headers, json={"book_id": book_id, "status": "reading"}
+    )
+    entry_id = create_response.json()["id"]
+    await client.patch(f"/entries/{entry_id}", headers=auth_headers, json={"characters_notes": "Uinston Smit"})
+
+    response = await client.get(f"/entries/{entry_id}", headers=auth_headers)
+
+    assert response.status_code == 200
+    assert response.json()["characters_notes"] == "Uinston Smit"
+
+
+async def test_get_entry_returns_404_for_another_users_entry(client, auth_headers):
+    book_id = await _create_book(client, auth_headers)
+    create_response = await client.post("/entries", headers=auth_headers, json={"book_id": book_id})
+    entry_id = create_response.json()["id"]
+
+    from tests.telegram_test_utils import build_init_data
+
+    other_init_data = build_init_data("test-bot-token", {"id": 424242, "username": "boshqa_foydalanuvchi"})
+    other_auth = await client.post("/auth/telegram", json={"init_data": other_init_data})
+    other_headers = {"Authorization": f"Bearer {other_auth.json()['access_token']}"}
+
+    response = await client.get(f"/entries/{entry_id}", headers=other_headers)
+
+    assert response.status_code == 404
+    assert response.json()["error_key"] == "error.entry_not_found"
 ```
 
 - [ ] **Step 2: Run test to verify it fails**
@@ -1881,6 +1947,15 @@ async def list_entries(
     return await service.list_entries(db, user_id, favorites_only)
 
 
+@router.get("/{entry_id}", response_model=EntryOut)
+async def get_entry(
+    entry_id: int,
+    db: AsyncSession = Depends(get_db),
+    user_id: int = Depends(get_current_user_id),
+):
+    return await service.get_owned_entry(db, user_id, entry_id)
+
+
 @router.patch("/{entry_id}", response_model=EntryOut)
 async def update_entry(
     entry_id: int,
@@ -1906,7 +1981,7 @@ app.include_router(entries_router)
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `pytest tests/test_entries.py -v`
-Expected: PASS (4 tests)
+Expected: PASS (6 tests)
 
 - [ ] **Step 5: Commit**
 
