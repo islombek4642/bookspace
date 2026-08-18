@@ -216,7 +216,7 @@ ReactDOM.createRoot(document.getElementById("root")!).render(
 ```typescript
 // frontend/src/App.tsx
 function App() {
-  return <div className="min-h-screen bg-white text-gray-900">BookSpace</div>;
+  return <div className="min-h-screen bg-stone-50 text-stone-900">BookSpace</div>;
 }
 
 export default App;
@@ -711,15 +711,15 @@ export function LibraryCard({ item }: { item: LibraryItem }) {
   return (
     <Link
       to={`/read/${item.entry_id}`}
-      className="mb-4 block break-inside-avoid overflow-hidden rounded-2xl bg-white shadow-sm transition-shadow hover:shadow-md"
+      className="mb-4 block break-inside-avoid overflow-hidden rounded-xl bg-white shadow-sm transition-shadow hover:shadow-md"
     >
       {item.book_cover_url && (
         <img src={item.book_cover_url} alt={item.book_title} className="w-full object-cover" />
       )}
       <div className="p-3">
         <p className="text-sm font-semibold">{item.book_title}</p>
-        {item.book_author && <p className="text-xs text-gray-500">{item.book_author}</p>}
-        {item.is_favorite && <span className="text-xs text-rose-500">★ Sevimli</span>}
+        {item.book_author && <p className="text-xs text-stone-500">{item.book_author}</p>}
+        {item.is_favorite && <span className="text-xs text-amber-700">★ Sevimli</span>}
       </div>
     </Link>
   );
@@ -738,7 +738,7 @@ interface LibraryGridProps {
 
 export function LibraryGrid({ items, emptyMessage }: LibraryGridProps) {
   if (items.length === 0) {
-    return <p className="p-4 text-center text-gray-500">{emptyMessage}</p>;
+    return <p className="p-4 text-center text-stone-500">{emptyMessage}</p>;
   }
 
   return (
@@ -760,7 +760,7 @@ export function LibraryPage() {
   const { items, loading } = useLibrary(false);
 
   if (loading) {
-    return <p className="p-4 text-center text-gray-500">Yuklanmoqda...</p>;
+    return <p className="p-4 text-center text-stone-500">Yuklanmoqda...</p>;
   }
 
   return <LibraryGrid items={items} emptyMessage="Hali kitob qo'shilmagan." />;
@@ -834,7 +834,7 @@ export function FavoritesPage() {
   const { items, loading } = useLibrary(true);
 
   if (loading) {
-    return <p className="p-4 text-center text-gray-500">Yuklanmoqda...</p>;
+    return <p className="p-4 text-center text-stone-500">Yuklanmoqda...</p>;
   }
 
   return <LibraryGrid items={items} emptyMessage="Hali sevimli kitob belgilanmagan." />;
@@ -989,9 +989,9 @@ export function AddBookPage() {
           value={query}
           onChange={(event) => setQuery(event.target.value)}
           placeholder="Kitob nomini kiriting"
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-2"
+          className="flex-1 rounded-lg border border-stone-300 px-3 py-2"
         />
-        <button type="submit" className="rounded-lg bg-gray-900 px-4 py-2 text-white">
+        <button type="submit" className="rounded-full bg-amber-800 px-4 py-2 text-white transition-colors hover:bg-amber-900 active:scale-[0.98]">
           Qidirish
         </button>
       </form>
@@ -1002,10 +1002,10 @@ export function AddBookPage() {
             <button
               type="button"
               onClick={() => handleSelectResult(result)}
-              className="w-full rounded-lg border border-gray-200 p-3 text-left hover:bg-gray-50"
+              className="w-full rounded-lg border border-stone-200 p-3 text-left hover:bg-stone-100"
             >
               <p className="font-semibold">{result.title}</p>
-              {result.author && <p className="text-sm text-gray-500">{result.author}</p>}
+              {result.author && <p className="text-sm text-stone-500">{result.author}</p>}
             </button>
           </li>
         ))}
@@ -1013,20 +1013,20 @@ export function AddBookPage() {
 
       {searched && results.length === 0 && (
         <div className="space-y-3 border-t pt-4">
-          <p className="text-gray-600">Kitob topilmadi. Qo'lda qo'shing:</p>
+          <p className="text-stone-600">Kitob topilmadi. Qo'lda qo'shing:</p>
           <form onSubmit={handleManualSubmit} className="space-y-2">
             <input
               value={manualTitle}
               onChange={(event) => setManualTitle(event.target.value)}
               placeholder="Kitob nomi"
               required
-              className="w-full rounded-lg border border-gray-300 px-3 py-2"
+              className="w-full rounded-lg border border-stone-300 px-3 py-2"
             />
             <input
               value={manualAuthor}
               onChange={(event) => setManualAuthor(event.target.value)}
               placeholder="Muallif"
-              className="w-full rounded-lg border border-gray-300 px-3 py-2"
+              className="w-full rounded-lg border border-stone-300 px-3 py-2"
             />
             <input
               type="file"
@@ -1034,7 +1034,7 @@ export function AddBookPage() {
               onChange={(event) => setManualCoverFile(event.target.files?.[0] ?? null)}
               className="w-full text-sm"
             />
-            <button type="submit" className="rounded-lg bg-gray-900 px-4 py-2 text-white">
+            <button type="submit" className="rounded-full bg-amber-800 px-4 py-2 text-white transition-colors hover:bg-amber-900 active:scale-[0.98]">
               Qo'shish
             </button>
           </form>
@@ -1230,7 +1230,7 @@ export function EntryDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   if (loading || !entry || !book) {
-    return <p className="p-4 text-center text-gray-500">Yuklanmoqda...</p>;
+    return <p className="p-4 text-center text-stone-500">Yuklanmoqda...</p>;
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -1262,14 +1262,14 @@ export function EntryDetailPage() {
     <div className="space-y-6 p-4">
       <div>
         <h1 className="text-xl font-bold">{book.title}</h1>
-        {book.author && <p className="text-gray-500">{book.author}</p>}
+        {book.author && <p className="text-stone-500">{book.author}</p>}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
         <select
           name="status"
           defaultValue={entry.status}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2"
+          className="w-full rounded-lg border border-stone-300 px-3 py-2"
         >
           <option value="planned">Rejalashtirilgan</option>
           <option value="reading">O'qilmoqda</option>
@@ -1281,13 +1281,13 @@ export function EntryDetailPage() {
             type="date"
             name="started_at"
             defaultValue={entry.started_at ?? ""}
-            className="flex-1 rounded-lg border border-gray-300 px-3 py-2"
+            className="flex-1 rounded-lg border border-stone-300 px-3 py-2"
           />
           <input
             type="date"
             name="finished_at"
             defaultValue={entry.finished_at ?? ""}
-            className="flex-1 rounded-lg border border-gray-300 px-3 py-2"
+            className="flex-1 rounded-lg border border-stone-300 px-3 py-2"
           />
         </div>
 
@@ -1295,20 +1295,20 @@ export function EntryDetailPage() {
           name="characters_notes"
           defaultValue={entry.characters_notes ?? ""}
           placeholder="Asosiy qahramonlar"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2"
+          className="w-full rounded-lg border border-stone-300 px-3 py-2"
         />
 
         <textarea
           name="personal_thoughts"
           defaultValue={entry.personal_thoughts ?? ""}
           placeholder="Shaxsiy fikringiz"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2"
+          className="w-full rounded-lg border border-stone-300 px-3 py-2"
         />
 
         <select
           name="rating"
           defaultValue={entry.rating ?? ""}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2"
+          className="w-full rounded-lg border border-stone-300 px-3 py-2"
         >
           <option value="">Baho yo'q</option>
           {[1, 2, 3, 4, 5].map((value) => (
@@ -1328,7 +1328,7 @@ export function EntryDetailPage() {
         <button
           type="submit"
           disabled={saving}
-          className="w-full rounded-lg bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
+          className="w-full rounded-full bg-amber-800 px-4 py-2 text-white transition-colors hover:bg-amber-900 active:scale-[0.98] disabled:opacity-50"
         >
           Saqlash
         </button>
@@ -1460,7 +1460,7 @@ export function QuoteList({ entryId, quotes, onChange }: QuoteListProps) {
       <h2 className="font-semibold">Iqtiboslar</h2>
       <ul className="space-y-2">
         {quotes.map((quote) => (
-          <li key={quote.id} className="flex items-start justify-between gap-2 rounded-lg bg-gray-50 p-3">
+          <li key={quote.id} className="flex items-start justify-between gap-2 rounded-lg bg-stone-100 p-3">
             <p className="italic">&quot;{quote.text}&quot;</p>
             <button type="button" onClick={() => handleDelete(quote.id)} className="text-sm text-red-500">
               O'chirish
@@ -1473,9 +1473,9 @@ export function QuoteList({ entryId, quotes, onChange }: QuoteListProps) {
           value={text}
           onChange={(event) => setText(event.target.value)}
           placeholder="Yangi iqtibos"
-          className="flex-1 rounded-lg border border-gray-300 px-3 py-2"
+          className="flex-1 rounded-lg border border-stone-300 px-3 py-2"
         />
-        <button type="submit" className="rounded-lg bg-gray-900 px-4 py-2 text-white">
+        <button type="submit" className="rounded-full bg-amber-800 px-4 py-2 text-white transition-colors hover:bg-amber-900 active:scale-[0.98]">
           Qo'shish
         </button>
       </form>
@@ -1594,7 +1594,7 @@ export function ProfilePage() {
   }, []);
 
   if (!profile) {
-    return <p className="p-4 text-center text-gray-500">Yuklanmoqda...</p>;
+    return <p className="p-4 text-center text-stone-500">Yuklanmoqda...</p>;
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -1624,24 +1624,24 @@ export function ProfilePage() {
           name="bio"
           defaultValue={profile.bio ?? ""}
           placeholder="O'zingiz haqingizda qisqacha yozing..."
-          className="w-full rounded-lg border border-gray-300 px-3 py-2"
+          className="w-full rounded-lg border border-stone-300 px-3 py-2"
         />
         <input
           type="date"
           name="reading_since"
           defaultValue={profile.reading_since ?? ""}
-          className="w-full rounded-lg border border-gray-300 px-3 py-2"
+          className="w-full rounded-lg border border-stone-300 px-3 py-2"
         />
         <input
           name="favorite_genre_keys"
           defaultValue={profile.favorite_genre_keys.join(", ")}
           placeholder="fantasy, classic"
-          className="w-full rounded-lg border border-gray-300 px-3 py-2"
+          className="w-full rounded-lg border border-stone-300 px-3 py-2"
         />
         <button
           type="submit"
           disabled={saving}
-          className="w-full rounded-lg bg-gray-900 px-4 py-2 text-white disabled:opacity-50"
+          className="w-full rounded-full bg-amber-800 px-4 py-2 text-white transition-colors hover:bg-amber-900 active:scale-[0.98] disabled:opacity-50"
         >
           Saqlash
         </button>
@@ -1745,7 +1745,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     <ToastContext.Provider value={{ showToast }}>
       {children}
       {message && (
-        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 rounded-lg bg-gray-900 px-4 py-2 text-white shadow-lg">
+        <div className="fixed bottom-20 left-1/2 -translate-x-1/2 rounded-full bg-stone-900 px-4 py-2 text-white shadow-lg">
           {message}
         </div>
       )}
@@ -1828,7 +1828,7 @@ import { Link } from "react-router-dom";
 
 export function BottomNav() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 flex justify-around border-t border-gray-200 bg-white py-2">
+    <nav className="fixed bottom-0 left-0 right-0 flex justify-around border-t border-stone-200 bg-white py-2">
       <Link to="/" className="text-sm">
         Kutubxona
       </Link>
@@ -1864,7 +1864,7 @@ function AuthGate({ children }: { children: ReactNode }) {
   const { status } = useAuth();
 
   if (status === "loading") {
-    return <p className="p-4 text-center text-gray-500">Yuklanmoqda...</p>;
+    return <p className="p-4 text-center text-stone-500">Yuklanmoqda...</p>;
   }
 
   if (status === "error") {

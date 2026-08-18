@@ -7,3 +7,6 @@ node_modules/
 dist/
 backend/static/
 *.tsbuildinfo
+.agents/
+.claude/
+skills-lock.json
