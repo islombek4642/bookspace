@@ -1328,26 +1328,57 @@ export function useEntryDetail(entryId: number) {
   const [book, setBook] = useState<Book | null>(null);
   const [quotes, setQuotes] = useState<Quote[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   async function reload() {
     setLoading(true);
-    const fetchedEntry = await apiClient.get<Entry>(`/entries/${entryId}`);
-    const [fetchedBook, fetchedQuotes] = await Promise.all([
-      apiClient.get<Book>(`/catalog/books/${fetchedEntry.book_id}`),
-      apiClient.get<Quote[]>(`/entries/${entryId}/quotes`),
-    ]);
-    setEntry(fetchedEntry);
-    setBook(fetchedBook);
-    setQuotes(fetchedQuotes);
-    setLoading(false);
+    setError(false);
+    try {
+      const fetchedEntry = await apiClient.get<Entry>(`/entries/${entryId}`);
+      const [fetchedBook, fetchedQuotes] = await Promise.all([
+        apiClient.get<Book>(`/catalog/books/${fetchedEntry.book_id}`),
+        apiClient.get<Quote[]>(`/entries/${entryId}/quotes`),
+      ]);
+      setEntry(fetchedEntry);
+      setBook(fetchedBook);
+      setQuotes(fetchedQuotes);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   useEffect(() => {
-    reload();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    let ignore = false;
+
+    async function load() {
+      setLoading(true);
+      setError(false);
+      try {
+        const fetchedEntry = await apiClient.get<Entry>(`/entries/${entryId}`);
+        const [fetchedBook, fetchedQuotes] = await Promise.all([
+          apiClient.get<Book>(`/catalog/books/${fetchedEntry.book_id}`),
+          apiClient.get<Quote[]>(`/entries/${entryId}/quotes`),
+        ]);
+        if (ignore) return;
+        setEntry(fetchedEntry);
+        setBook(fetchedBook);
+        setQuotes(fetchedQuotes);
+      } catch {
+        if (!ignore) setError(true);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+
+    load();
+    return () => {
+      ignore = true;
+    };
   }, [entryId]);
 
-  return { entry, book, quotes, loading, reload };
+  return { entry, book, quotes, loading, error, reload };
 }
 ```
 
@@ -1361,12 +1392,16 @@ import { useEntryDetail } from "./useEntryDetail";
 export function EntryDetailPage() {
   const { id } = useParams<{ id: string }>();
   const entryId = Number(id);
-  const { entry, book, loading, reload } = useEntryDetail(entryId);
+  const { entry, book, loading, error: loadError, reload } = useEntryDetail(entryId);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  if (loading || !entry || !book) {
+  if (loading) {
     return <p className="p-4 text-center text-stone-500">Yuklanmoqda...</p>;
+  }
+
+  if (loadError || !entry || !book) {
+    return <p className="p-4 text-center text-stone-500">Yozuvni yuklab bo'lmadi.</p>;
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
