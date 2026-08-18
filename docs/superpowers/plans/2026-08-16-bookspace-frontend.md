@@ -1648,18 +1648,37 @@ interface QuoteListProps {
 
 export function QuoteList({ entryId, quotes, onChange }: QuoteListProps) {
   const [text, setText] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleAdd(event: FormEvent) {
     event.preventDefault();
-    if (!text.trim()) return;
-    await apiClient.post(`/entries/${entryId}/quotes`, { text, sort_order: quotes.length });
-    setText("");
-    onChange();
+    if (!text.trim() || submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await apiClient.post(`/entries/${entryId}/quotes`, { text, sort_order: quotes.length });
+      setText("");
+      onChange();
+    } catch {
+      setError("Iqtibos qo'shishda xatolik yuz berdi.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function handleDelete(quoteId: number) {
-    await apiClient.delete(`/entries/${entryId}/quotes/${quoteId}`);
-    onChange();
+    if (submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      await apiClient.delete(`/entries/${entryId}/quotes/${quoteId}`);
+      onChange();
+    } catch {
+      setError("Iqtibosni o'chirishda xatolik yuz berdi.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -1669,12 +1688,18 @@ export function QuoteList({ entryId, quotes, onChange }: QuoteListProps) {
         {quotes.map((quote) => (
           <li key={quote.id} className="flex items-start justify-between gap-2 rounded-lg bg-stone-100 p-3">
             <p className="italic">&quot;{quote.text}&quot;</p>
-            <button type="button" onClick={() => handleDelete(quote.id)} className="text-sm text-red-500">
+            <button
+              type="button"
+              onClick={() => handleDelete(quote.id)}
+              disabled={submitting}
+              className="text-sm text-red-500 disabled:opacity-50"
+            >
               O'chirish
             </button>
           </li>
         ))}
       </ul>
+      {error && <p className="text-sm text-red-600">{error}</p>}
       <form onSubmit={handleAdd} className="flex items-end gap-2">
         <div className="flex-1">
           <label htmlFor="new-quote" className="mb-1 block text-sm font-medium text-stone-700">
@@ -1688,7 +1713,11 @@ export function QuoteList({ entryId, quotes, onChange }: QuoteListProps) {
             className="w-full rounded-lg border border-stone-300 px-3 py-2"
           />
         </div>
-        <button type="submit" className="rounded-full bg-amber-800 px-4 py-2 text-white transition-colors hover:bg-amber-900 active:scale-[0.98]">
+        <button
+          type="submit"
+          disabled={submitting}
+          className="rounded-full bg-amber-800 px-4 py-2 text-white transition-colors hover:bg-amber-900 active:scale-[0.98] disabled:opacity-50"
+        >
           Qo'shish
         </button>
       </form>
@@ -1702,7 +1731,7 @@ export function QuoteList({ entryId, quotes, onChange }: QuoteListProps) {
 import { QuoteList } from "./QuoteList";
 ```
 
-Add `const { entry, book, quotes, loading, reload } = useEntryDetail(entryId);` (destructure `quotes` too) and render `<QuoteList entryId={entryId} quotes={quotes} onChange={reload} />` immediately after the closing `</form>` tag, before the closing `</div>`.
+Task 8's committed `EntryDetailPage.tsx` currently destructures `const { entry, book, loading, error: loadError, reload } = useEntryDetail(entryId);` — add `quotes` to that same destructure (`const { entry, book, quotes, loading, error: loadError, reload } = useEntryDetail(entryId);`) and render `<QuoteList entryId={entryId} quotes={quotes} onChange={reload} />` immediately after the closing `</form>` tag, before the closing `</div>`.
 
 - [ ] **Step 4: Run test to verify it passes**
 
