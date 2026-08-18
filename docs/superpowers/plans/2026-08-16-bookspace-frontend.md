@@ -13,6 +13,14 @@
 
 **Note:** All commands below assume your shell's working directory is `frontend/` unless a different path is stated.
 
+**Design language (applies to every task's JSX below):** The exact Tailwind classes shown in each task's code blocks are illustrative of structure and behavior — implementers should replace the generic `gray-*`/`rose-*` placeholder classes with this consistent visual language instead, without changing any component's logic, state, or data flow:
+- **Accent color:** one deliberate accent, `amber-700`/`amber-800` (a warm, book-leather tone fitting a personal reading journal), not a generic AI-purple/blue. Neutral base is `stone-*` (warmer than default `gray-*`), not `zinc`/`slate`.
+- **Shape consistency:** one radius scale for the whole app — `rounded-xl` for cards, inputs, and images; `rounded-full` only for pill-shaped primary buttons and the bottom nav. Don't mix radius scales within a screen.
+- **Forms:** every input gets a real `<label>` element above it (not a bare `placeholder` standing in as the only label) — screen readers and a quick glance both need it. Placeholders may still show example text inside the field.
+- **Buttons:** verify contrast before shipping — accent-filled buttons get white text, never white-on-white or accent-on-accent. Add a light `active:scale-[0.98]` tactile press state on primary buttons.
+- **States:** loading/empty states stay simple text for MVP (`"Yuklanmoqda..."`, empty-state messages) — no skeleton loaders or shimmer, that's over-engineering for this scope. Keep them, just make sure every list/detail screen has one of each (already true throughout this plan).
+- **No landing-page patterns:** this is a functional CRUD app, not a marketing site — no hero sections, no scroll-driven animation, no marquees, no glassmorphism. Keep motion to simple `transition-shadow`/`active:scale` — nothing else.
+
 ---
 
 ### Task 1: Vite + React + TypeScript + Tailwind scaffolding
