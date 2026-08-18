@@ -2,10 +2,19 @@ from datetime import date, datetime
 
 from pydantic import BaseModel, field_validator
 
+VALID_ENTRY_STATUSES = {"planned", "reading", "finished"}
+
 
 class EntryCreate(BaseModel):
     book_id: int
     status: str = "planned"
+
+    @field_validator("status")
+    @classmethod
+    def status_must_be_valid(cls, v: str) -> str:
+        if v not in VALID_ENTRY_STATUSES:
+            raise ValueError(f"status must be one of {sorted(VALID_ENTRY_STATUSES)}")
+        return v
 
 
 class EntryUpdate(BaseModel):
@@ -16,6 +25,13 @@ class EntryUpdate(BaseModel):
     personal_thoughts: str | None = None
     rating: int | None = None
     is_favorite: bool | None = None
+
+    @field_validator("status")
+    @classmethod
+    def status_must_be_valid(cls, v: str | None) -> str | None:
+        if v is not None and v not in VALID_ENTRY_STATUSES:
+            raise ValueError(f"status must be one of {sorted(VALID_ENTRY_STATUSES)}")
+        return v
 
     @field_validator("rating")
     @classmethod

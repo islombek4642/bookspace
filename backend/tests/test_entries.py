@@ -91,6 +91,35 @@ async def test_get_entry_returns_full_detail(client, auth_headers):
     assert response.json()["characters_notes"] == "Uinston Smit"
 
 
+async def test_create_entry_rejects_nonexistent_book(client, auth_headers):
+    response = await client.post("/entries", headers=auth_headers, json={"book_id": 999999})
+
+    assert response.status_code == 404
+    assert response.json()["error_key"] == "error.book_not_found"
+
+
+async def test_create_entry_rejects_invalid_status(client, auth_headers):
+    book_id = await _create_book(client, auth_headers)
+
+    response = await client.post(
+        "/entries", headers=auth_headers, json={"book_id": book_id, "status": "not_a_real_status"}
+    )
+
+    assert response.status_code == 422
+    assert response.json()["error_key"] == "error.validation_error"
+
+
+async def test_update_entry_rejects_invalid_status(client, auth_headers):
+    book_id = await _create_book(client, auth_headers)
+    create_response = await client.post("/entries", headers=auth_headers, json={"book_id": book_id})
+    entry_id = create_response.json()["id"]
+
+    response = await client.patch(f"/entries/{entry_id}", headers=auth_headers, json={"status": "bogus"})
+
+    assert response.status_code == 422
+    assert response.json()["error_key"] == "error.validation_error"
+
+
 async def test_get_entry_returns_404_for_another_users_entry(client, auth_headers):
     book_id = await _create_book(client, auth_headers)
     create_response = await client.post("/entries", headers=auth_headers, json={"book_id": book_id})
