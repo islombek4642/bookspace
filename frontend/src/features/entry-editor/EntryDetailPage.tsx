@@ -1,12 +1,13 @@
 import { FormEvent, useState } from "react";
 import { useParams } from "react-router-dom";
 import { apiClient } from "../../api/client";
+import { QuoteList } from "./QuoteList";
 import { useEntryDetail } from "./useEntryDetail";
 
 export function EntryDetailPage() {
   const { id } = useParams<{ id: string }>();
   const entryId = Number(id);
-  const { entry, book, loading, error: loadError, reload } = useEntryDetail(entryId);
+  const { entry, book, quotes, loading, error: loadError, reload } = useEntryDetail(entryId);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -154,6 +155,8 @@ export function EntryDetailPage() {
           Saqlash
         </button>
       </form>
+
+      <QuoteList entryId={entryId} quotes={quotes} onChange={reload} />
     </div>
   );
 }
