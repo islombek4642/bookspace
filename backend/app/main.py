@@ -1,6 +1,7 @@
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.errors import AppError, app_error_handler
@@ -32,9 +33,26 @@ def health() -> dict:
     return {"status": "ok"}
 
 
-# Mounted last: explicit routes above always match first, so this never
-# shadows the API. Only activates once the frontend build lands here
-# (wired up in the Deployment plan).
+# Static frontend hosting: only activates once the frontend build lands here
+# (wired up in the Deployment plan). Two parts, registered last so API routes
+# always match first:
+#   1. /assets/* serves Vite's hashed JS/CSS/image bundles directly.
+#   2. The catch-all serves index.html for any other unmatched GET path, so
+#      client-side routes (e.g. /favorites, /profile) work on direct load
+#      or refresh, not just when navigated to from within the app.
+def _mount_static_frontend(app: FastAPI, static_dir: Path) -> None:
+    if not static_dir.exists():
+        return
+
+    app.mount("/assets", StaticFiles(directory=static_dir / "assets"), name="static-assets")
+
+    @app.get("/{full_path:path}")
+    async def spa_fallback(full_path: str) -> FileResponse:
+        index_file = static_dir / "index.html"
+        if not index_file.exists():
+            raise HTTPException(status_code=404)
+        return FileResponse(index_file)
+
+
 _static_dir = Path(__file__).resolve().parent.parent / "static"
-if _static_dir.exists():
-    app.mount("/", StaticFiles(directory=_static_dir, html=True), name="static")
+_mount_static_frontend(app, _static_dir)
