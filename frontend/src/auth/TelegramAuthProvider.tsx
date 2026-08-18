@@ -34,6 +34,8 @@ export function TelegramAuthProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<AuthStatus>("loading");
 
   useEffect(() => {
+    let ignore = false;
+
     const webApp = window.Telegram?.WebApp;
     const initData = webApp?.initData;
 
@@ -47,12 +49,18 @@ export function TelegramAuthProvider({ children }: { children: ReactNode }) {
     apiClient
       .post<TelegramAuthResponse>("/auth/telegram", { init_data: initData })
       .then((response) => {
+        if (ignore) return;
         setAuthToken(response.access_token);
         setStatus("authenticated");
       })
       .catch(() => {
+        if (ignore) return;
         setStatus("error");
       });
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   return <AuthContext.Provider value={{ status }}>{children}</AuthContext.Provider>;
