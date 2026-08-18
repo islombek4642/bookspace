@@ -959,6 +959,28 @@ describe("AddBookPage", () => {
 
     await waitFor(() => expect(screen.getByText("Entry page 900")).toBeInTheDocument());
   });
+
+  it("shows an error message when the search request fails", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ error_key: "error.unknown", message: "Server xatosi" }), { status: 500 })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/add-book"]}>
+        <Routes>
+          <Route path="/add-book" element={<AddBookPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.type(screen.getByPlaceholderText("Kitob nomini kiriting"), "Noma'lum kitob");
+    await user.click(screen.getByRole("button", { name: "Qidirish" }));
+
+    await waitFor(() => expect(screen.getByText("Qidiruvda xatolik yuz berdi.")).toBeInTheDocument());
+  });
 });
 ```
 
@@ -1001,6 +1023,8 @@ export function AddBookPage() {
   const [manualTitle, setManualTitle] = useState("");
   const [manualAuthor, setManualAuthor] = useState("");
   const [manualCoverFile, setManualCoverFile] = useState<File | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function startEntryFor(book: Book) {
     const entry = await apiClient.post<Entry>("/entries", { book_id: book.id, status: "reading" });
@@ -1009,29 +1033,54 @@ export function AddBookPage() {
 
   async function handleSearch(event: FormEvent) {
     event.preventDefault();
-    const found = await apiClient.get<BookSearchResult[]>(`/catalog/search?q=${encodeURIComponent(query)}`);
-    setResults(found);
-    setSearched(true);
+    if (submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const found = await apiClient.get<BookSearchResult[]>(`/catalog/search?q=${encodeURIComponent(query)}`);
+      setResults(found);
+      setSearched(true);
+    } catch {
+      setError("Qidiruvda xatolik yuz berdi.");
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   async function handleSelectResult(result: BookSearchResult) {
-    const book = await apiClient.post<Book>("/catalog/books/from-search", result);
-    await startEntryFor(book);
+    if (submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      const book = await apiClient.post<Book>("/catalog/books/from-search", result);
+      await startEntryFor(book);
+    } catch {
+      setError("Kitobni qo'shishda xatolik yuz berdi.");
+      setSubmitting(false);
+    }
   }
 
   async function handleManualSubmit(event: FormEvent) {
     event.preventDefault();
-    let coverUrl: string | null = null;
-    if (manualCoverFile) {
-      const uploaded = await uploadFile("/media/upload", manualCoverFile);
-      coverUrl = uploaded.url;
+    if (submitting) return;
+    setSubmitting(true);
+    setError(null);
+    try {
+      let coverUrl: string | null = null;
+      if (manualCoverFile) {
+        const uploaded = await uploadFile("/media/upload", manualCoverFile);
+        coverUrl = uploaded.url;
+      }
+      const book = await apiClient.post<Book>("/catalog/books/manual", {
+        title: manualTitle,
+        author: manualAuthor || null,
+        cover_url: coverUrl,
+      });
+      await startEntryFor(book);
+    } catch {
+      setError("Kitobni qo'shishda xatolik yuz berdi.");
+      setSubmitting(false);
     }
-    const book = await apiClient.post<Book>("/catalog/books/manual", {
-      title: manualTitle,
-      author: manualAuthor || null,
-      cover_url: coverUrl,
-    });
-    await startEntryFor(book);
   }
 
   return (
@@ -1049,10 +1098,16 @@ export function AddBookPage() {
             className="w-full rounded-lg border border-stone-300 px-3 py-2"
           />
         </div>
-        <button type="submit" className="rounded-full bg-amber-800 px-4 py-2 text-white transition-colors hover:bg-amber-900 active:scale-[0.98]">
+        <button
+          type="submit"
+          disabled={submitting}
+          className="rounded-full bg-amber-800 px-4 py-2 text-white transition-colors hover:bg-amber-900 active:scale-[0.98] disabled:opacity-50"
+        >
           Qidirish
         </button>
       </form>
+
+      {error && <p className="text-red-600">{error}</p>}
 
       <ul className="space-y-2">
         {results.map((result) => (
@@ -1060,7 +1115,8 @@ export function AddBookPage() {
             <button
               type="button"
               onClick={() => handleSelectResult(result)}
-              className="w-full rounded-lg border border-stone-200 p-3 text-left hover:bg-stone-100"
+              disabled={submitting}
+              className="w-full rounded-lg border border-stone-200 p-3 text-left hover:bg-stone-100 disabled:opacity-50"
             >
               <p className="font-semibold">{result.title}</p>
               {result.author && <p className="text-sm text-stone-500">{result.author}</p>}
@@ -1110,7 +1166,11 @@ export function AddBookPage() {
                 className="w-full text-sm"
               />
             </div>
-            <button type="submit" className="rounded-full bg-amber-800 px-4 py-2 text-white transition-colors hover:bg-amber-900 active:scale-[0.98]">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="rounded-full bg-amber-800 px-4 py-2 text-white transition-colors hover:bg-amber-900 active:scale-[0.98] disabled:opacity-50"
+            >
               Qo'shish
             </button>
           </form>
