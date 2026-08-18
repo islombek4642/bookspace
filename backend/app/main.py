@@ -1,4 +1,7 @@
+from pathlib import Path
+
 from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 
 from app.core.errors import AppError, app_error_handler
 from app.modules.auth.router import router as auth_router
@@ -27,3 +30,11 @@ app.include_router(bot_router)
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok"}
+
+
+# Mounted last: explicit routes above always match first, so this never
+# shadows the API. Only activates once the frontend build lands here
+# (wired up in the Deployment plan).
+_static_dir = Path(__file__).resolve().parent.parent / "static"
+if _static_dir.exists():
+    app.mount("/", StaticFiles(directory=_static_dir, html=True), name="static")
