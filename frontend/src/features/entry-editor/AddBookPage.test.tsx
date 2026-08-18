@@ -40,4 +40,26 @@ describe("AddBookPage", () => {
 
     await waitFor(() => expect(screen.getByText("Entry page 900")).toBeInTheDocument());
   });
+
+  it("shows an error message when the search request fails", async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(
+      new Response(JSON.stringify({ error_key: "error.unknown", message: "Server xatosi" }), { status: 500 })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/add-book"]}>
+        <Routes>
+          <Route path="/add-book" element={<AddBookPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.type(screen.getByPlaceholderText("Kitob nomini kiriting"), "Noma'lum kitob");
+    await user.click(screen.getByRole("button", { name: "Qidirish" }));
+
+    await waitFor(() => expect(screen.getByText("Qidiruvda xatolik yuz berdi.")).toBeInTheDocument());
+  });
 });
