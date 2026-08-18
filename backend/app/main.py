@@ -44,9 +44,11 @@ def _mount_static_frontend(app: FastAPI, static_dir: Path) -> None:
     if not static_dir.exists():
         return
 
-    app.mount("/assets", StaticFiles(directory=static_dir / "assets"), name="static-assets")
+    assets_dir = static_dir / "assets"
+    if assets_dir.exists():
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="static-assets")
 
-    @app.get("/{full_path:path}")
+    @app.get("/{full_path:path}", include_in_schema=False)
     async def spa_fallback(full_path: str) -> FileResponse:
         index_file = static_dir / "index.html"
         if not index_file.exists():

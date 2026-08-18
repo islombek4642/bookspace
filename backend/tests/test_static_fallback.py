@@ -36,3 +36,18 @@ def test_spa_fallback_does_nothing_when_static_dir_missing(tmp_path: Path):
 
     response = client.get("/anything")
     assert response.status_code == 404
+
+
+def test_spa_fallback_works_without_assets_subdirectory(tmp_path: Path):
+    static_dir = tmp_path / "static"
+    static_dir.mkdir()
+    (static_dir / "index.html").write_text("<html><body>BookSpace</body></html>", encoding="utf-8")
+    # Deliberately no assets/ subdirectory created here.
+
+    app = FastAPI()
+    _mount_static_frontend(app, static_dir)  # must not raise
+    client = TestClient(app)
+
+    response = client.get("/favorites")
+    assert response.status_code == 200
+    assert "BookSpace" in response.text
