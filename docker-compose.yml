@@ -1,0 +1,58 @@
+# docker-compose.yml
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: bookspace_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER:-bookspace}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-bookspace}
+      POSTGRES_DB: ${DB_NAME:-bookspace}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-bookspace}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    container_name: bookspace_api
+    restart: on-failure:5
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://${DB_USER:-bookspace}:${DB_PASSWORD:-bookspace}@db:5432/${DB_NAME:-bookspace}
+      - VIRTUAL_HOST=${DOMAIN:-localhost}
+      - VIRTUAL_PORT=8000
+      - LETSENCRYPT_HOST=${DOMAIN:-localhost}
+      - LETSENCRYPT_EMAIL=${SSL_EMAIL:-admin@example.com}
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    expose:
+      - "8000"
+    networks:
+      - backend
+      - proxy_network
+    volumes:
+      - ./backups:/app/backups
+
+networks:
+  backend:
+  proxy_network:
+    external: true
+
+volumes:
+  postgres_data:
