@@ -24,7 +24,7 @@
 **Files:**
 - Modify: `backend/Dockerfile`
 
-- [ ] **Step 1: Replace the single-stage Dockerfile with a multi-stage build**
+- [x] **Step 1: Replace the single-stage Dockerfile with a multi-stage build**
 
 The backend plan's Task 1 created a single-stage `backend/Dockerfile` that only installs Python dependencies. Replace its entire contents with:
 
@@ -67,7 +67,9 @@ Two things worth noting:
 Run: `docker build -f backend/Dockerfile -t bookspace-api:test .`
 Expected: the build completes through both stages without error. If Docker isn't installed on this machine, skip this check here — Task 6 validates it for real before the first deploy.
 
-- [ ] **Step 3: Commit**
+Skipped locally — Docker is not installed on this development machine. Deferred to Task 6 (real server deploy), as the plan allows.
+
+- [x] **Step 3: Commit**
 
 ```bash
 git add backend/Dockerfile
@@ -81,7 +83,7 @@ git commit -m "feat: build the frontend and bundle it into the backend image"
 **Files:**
 - Create: `docker-compose.yml` (repo root)
 
-- [ ] **Step 1: Write the compose file**
+- [x] **Step 1: Write the compose file**
 
 ```yaml
 # docker-compose.yml
@@ -148,10 +150,12 @@ volumes:
 
 - [ ] **Step 2: Validate the compose file (if Docker is available)**
 
+Skipped locally — Docker is not installed on this development machine. Deferred to Task 6 (real server deploy), as the plan allows.
+
 Run: `DOMAIN=example.com SSL_EMAIL=admin@example.com DB_USER=bookspace DB_PASSWORD=x DB_NAME=bookspace docker compose config --quiet`
 Expected: no output and exit code 0 (a clean YAML/interpolation parse). If Docker isn't installed here, skip — validated for real in Task 6.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add docker-compose.yml
@@ -165,7 +169,7 @@ git commit -m "feat: add docker-compose wiring api+db into the shared nginx-prox
 **Files:**
 - Create: `.env.example` (repo root)
 
-- [ ] **Step 1: Write the example environment file**
+- [x] **Step 1: Write the example environment file**
 
 ```text
 # .env.example (repo root — copy to .env and fill in real values before deploying)
@@ -202,12 +206,12 @@ SSL_EMAIL=you@example.com
 
 `DATABASE_URL` is deliberately absent here — `docker-compose.yml`'s `environment:` block computes it from `DB_USER`/`DB_PASSWORD`/`DB_NAME` and overrides whatever `backend/.env.example`'s local-dev default was, so it never needs to be set by hand for the container.
 
-- [ ] **Step 2: Verify no real secrets are checked in**
+- [x] **Step 2: Verify no real secrets are checked in**
 
 Run: `git check-ignore .env`
 Expected: prints `.env` (confirms the root `.gitignore` from the backend plan's Task 1, which already lists `.env`, protects the real file — only `.env.example` gets committed)
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add .env.example
@@ -221,7 +225,7 @@ git commit -m "feat: add root .env.example documenting deploy configuration"
 **Files:**
 - Create: `scripts/deploy.sh` (repo root)
 
-- [ ] **Step 1: Write the deploy script**
+- [x] **Step 1: Write the deploy script**
 
 ```bash
 #!/bin/bash
@@ -337,18 +341,20 @@ echo "Test: curl -I https://${DOMAIN_VALUE}"
 echo ""
 ```
 
-- [ ] **Step 2: Make it executable and check its syntax**
+- [x] **Step 2: Make it executable and check its syntax**
 
 Run: `chmod +x scripts/deploy.sh`
 Run: `bash -n scripts/deploy.sh`
 Expected: no output and exit code 0 (valid bash syntax; `-n` parses without executing, so this works without Docker or a Linux server)
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add scripts/deploy.sh
 git commit -m "feat: add deploy script (backup, pull, rebuild, migrate, webhook)"
 ```
+
+**Fix applied during implementation:** the reference `set_webhook()` call above did not pass `secret_token`, even though `backend/app/modules/bot/webhook_router.py` validates the `X-Telegram-Bot-Api-Secret-Token` header whenever `settings.telegram_webhook_secret` is set. Without passing it, Telegram would never send that header and every real webhook call would 401 once an operator set `TELEGRAM_WEBHOOK_SECRET`. Fixed in both `scripts/deploy.sh` and the matching manual snippet in `DEPLOYMENT.md`'s troubleshooting section: `secret_token=settings.telegram_webhook_secret or None`.
 
 ---
 
@@ -357,7 +363,7 @@ git commit -m "feat: add deploy script (backup, pull, rebuild, migrate, webhook)
 **Files:**
 - Create: `DEPLOYMENT.md` (repo root)
 
-- [ ] **Step 1: Write the deployment guide**
+- [x] **Step 1: Write the deployment guide**
 
 ```markdown
 # BookSpace Deployment & Operations Guide
@@ -473,7 +479,7 @@ asyncio.run(Bot(token=settings.bot_token).set_webhook(url=settings.webapp_url.rs
 ```
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 git add DEPLOYMENT.md
