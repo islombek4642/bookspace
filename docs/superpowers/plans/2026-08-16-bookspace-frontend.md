@@ -2014,7 +2014,7 @@ Expected: FAIL — `./ToastProvider` module doesn't exist
 
 ```typescript
 // frontend/src/components/ToastProvider.tsx
-import { createContext, ReactNode, useCallback, useContext, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useRef, useState } from "react";
 
 interface ToastContextValue {
   showToast: (message: string) => void;
@@ -2028,10 +2028,17 @@ export function useToast(): ToastContextValue {
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [message, setMessage] = useState<string | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const showToast = useCallback((text: string) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
     setMessage(text);
-    setTimeout(() => setMessage(null), 4000);
+    timeoutRef.current = setTimeout(() => {
+      setMessage(null);
+      timeoutRef.current = null;
+    }, 4000);
   }, []);
 
   return (
