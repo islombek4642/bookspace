@@ -654,6 +654,23 @@ describe("LibraryPage", () => {
 
     await waitFor(() => expect(screen.getByText("Hali kitob qo'shilmagan.")).toBeInTheDocument());
   });
+
+  it("shows an error message when the fetch fails", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ error_key: "error.unknown", message: "Noma'lum xatolik" }), {
+        status: 500,
+      })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <MemoryRouter>
+        <LibraryPage />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => expect(screen.getByText("Kutubxonani yuklab bo'lmadi.")).toBeInTheDocument());
+  });
 });
 ```
 
@@ -686,19 +703,46 @@ export interface LibraryItem {
 export function useLibrary(favoritesOnly = false) {
   const [items, setItems] = useState<LibraryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   function reload() {
     setLoading(true);
+    setError(false);
     const query = favoritesOnly ? "?favorites_only=true" : "";
     apiClient
       .get<LibraryItem[]>(`/library${query}`)
       .then(setItems)
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }
 
-  useEffect(reload, [favoritesOnly]);
+  // Guarded with an `ignore` flag so React 18 StrictMode's dev double-invoke
+  // of this effect doesn't fire two overlapping requests, and so a response
+  // resolving after unmount doesn't call setState on an unmounted component.
+  // Manual reload() calls (e.g. after a user action) don't need this guard.
+  useEffect(() => {
+    let ignore = false;
+    setLoading(true);
+    setError(false);
+    const query = favoritesOnly ? "?favorites_only=true" : "";
+    apiClient
+      .get<LibraryItem[]>(`/library${query}`)
+      .then((data) => {
+        if (!ignore) setItems(data);
+      })
+      .catch(() => {
+        if (!ignore) setError(true);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
 
-  return { items, loading, reload };
+    return () => {
+      ignore = true;
+    };
+  }, [favoritesOnly]);
+
+  return { items, loading, error, reload };
 }
 ```
 
@@ -757,10 +801,14 @@ import { useLibrary } from "./useLibrary";
 import { LibraryGrid } from "./LibraryGrid";
 
 export function LibraryPage() {
-  const { items, loading } = useLibrary(false);
+  const { items, loading, error } = useLibrary(false);
 
   if (loading) {
     return <p className="p-4 text-center text-stone-500">Yuklanmoqda...</p>;
+  }
+
+  if (error) {
+    return <p className="p-4 text-center text-stone-500">Kutubxonani yuklab bo'lmadi.</p>;
   }
 
   return <LibraryGrid items={items} emptyMessage="Hali kitob qo'shilmagan." />;
@@ -770,7 +818,7 @@ export function LibraryPage() {
 - [ ] **Step 4: Run test to verify it passes**
 
 Run: `npm test`
-Expected: PASS (2 tests)
+Expected: PASS (3 tests)
 
 - [ ] **Step 5: Commit**
 
@@ -831,10 +879,14 @@ import { useLibrary } from "../library/useLibrary";
 import { LibraryGrid } from "../library/LibraryGrid";
 
 export function FavoritesPage() {
-  const { items, loading } = useLibrary(true);
+  const { items, loading, error } = useLibrary(true);
 
   if (loading) {
     return <p className="p-4 text-center text-stone-500">Yuklanmoqda...</p>;
+  }
+
+  if (error) {
+    return <p className="p-4 text-center text-stone-500">Kutubxonani yuklab bo'lmadi.</p>;
   }
 
   return <LibraryGrid items={items} emptyMessage="Hali sevimli kitob belgilanmagan." />;
