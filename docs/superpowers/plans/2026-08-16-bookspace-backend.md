@@ -3075,7 +3075,7 @@ def upgrade() -> None:
         sa.Column("avatar_url", sa.String(1024), nullable=True),
         sa.Column("bio", sa.Text, nullable=True),
         sa.Column("reading_since", sa.Date, nullable=True),
-        sa.Column("created_at", sa.DateTime, server_default=sa.func.now()),
+        sa.Column("created_at", sa.DateTime, nullable=False, server_default=sa.func.now()),
     )
 
     op.create_table(
@@ -3100,7 +3100,7 @@ def upgrade() -> None:
         sa.Column("cover_url", sa.String(1024), nullable=True),
         sa.Column("description", sa.Text, nullable=True),
         sa.Column("created_by_user_id", sa.Integer, sa.ForeignKey("users.id"), nullable=True),
-        sa.Column("created_at", sa.DateTime, server_default=sa.func.now()),
+        sa.Column("created_at", sa.DateTime, nullable=False, server_default=sa.func.now()),
     )
 
     op.create_table(
@@ -3115,8 +3115,8 @@ def upgrade() -> None:
         sa.Column("personal_thoughts", sa.Text, nullable=True),
         sa.Column("rating", sa.Integer, nullable=True),
         sa.Column("is_favorite", sa.Boolean, nullable=False, server_default=sa.false()),
-        sa.Column("created_at", sa.DateTime, server_default=sa.func.now()),
-        sa.Column("updated_at", sa.DateTime, server_default=sa.func.now()),
+        sa.Column("created_at", sa.DateTime, nullable=False, server_default=sa.func.now()),
+        sa.Column("updated_at", sa.DateTime, nullable=False, server_default=sa.func.now()),
     )
 
     op.create_table(
@@ -3125,7 +3125,7 @@ def upgrade() -> None:
         sa.Column("entry_id", sa.Integer, sa.ForeignKey("entries.id"), nullable=False, index=True),
         sa.Column("text", sa.Text, nullable=False),
         sa.Column("sort_order", sa.Integer, nullable=False, server_default="0"),
-        sa.Column("created_at", sa.DateTime, server_default=sa.func.now()),
+        sa.Column("created_at", sa.DateTime, nullable=False, server_default=sa.func.now()),
     )
 
 
