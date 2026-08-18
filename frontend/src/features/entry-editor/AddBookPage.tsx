@@ -100,7 +100,7 @@ export function AddBookPage() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Kitob nomini kiriting"
-            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+            className="w-full rounded-xl border border-stone-300 px-3 py-2"
           />
         </div>
         <button
@@ -121,7 +121,7 @@ export function AddBookPage() {
               type="button"
               onClick={() => handleSelectResult(result)}
               disabled={submitting}
-              className="w-full rounded-lg border border-stone-200 p-3 text-left hover:bg-stone-100 disabled:opacity-50"
+              className="w-full rounded-xl border border-stone-200 p-3 text-left hover:bg-stone-100 disabled:opacity-50"
             >
               <p className="font-semibold">{result.title}</p>
               {result.author && <p className="text-sm text-stone-500">{result.author}</p>}
@@ -144,7 +144,7 @@ export function AddBookPage() {
                 onChange={(event) => setManualTitle(event.target.value)}
                 placeholder="Kitob nomi"
                 required
-                className="w-full rounded-lg border border-stone-300 px-3 py-2"
+                className="w-full rounded-xl border border-stone-300 px-3 py-2"
               />
             </div>
             <div>
@@ -156,7 +156,7 @@ export function AddBookPage() {
                 value={manualAuthor}
                 onChange={(event) => setManualAuthor(event.target.value)}
                 placeholder="Muallif"
-                className="w-full rounded-lg border border-stone-300 px-3 py-2"
+                className="w-full rounded-xl border border-stone-300 px-3 py-2"
               />
             </div>
             <div>

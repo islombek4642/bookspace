@@ -48,7 +48,7 @@ export function QuoteList({ entryId, quotes, onChange }: QuoteListProps) {
       <h2 className="font-semibold">Iqtiboslar</h2>
       <ul className="space-y-2">
         {quotes.map((quote) => (
-          <li key={quote.id} className="flex items-start justify-between gap-2 rounded-lg bg-stone-100 p-3">
+          <li key={quote.id} className="flex items-start justify-between gap-2 rounded-xl bg-stone-100 p-3">
             <p className="italic">&quot;{quote.text}&quot;</p>
             <button
               type="button"
@@ -72,7 +72,7 @@ export function QuoteList({ entryId, quotes, onChange }: QuoteListProps) {
             value={text}
             onChange={(event) => setText(event.target.value)}
             placeholder="Yangi iqtibos"
-            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+            className="w-full rounded-xl border border-stone-300 px-3 py-2"
           />
         </div>
         <button

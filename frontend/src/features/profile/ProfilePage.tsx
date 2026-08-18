@@ -85,7 +85,7 @@ export function ProfilePage() {
             name="bio"
             defaultValue={profile.bio ?? ""}
             placeholder="O'zingiz haqingizda qisqacha yozing..."
-            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+            className="w-full rounded-xl border border-stone-300 px-3 py-2"
           />
         </div>
         <div>
@@ -97,7 +97,7 @@ export function ProfilePage() {
             type="date"
             name="reading_since"
             defaultValue={profile.reading_since ?? ""}
-            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+            className="w-full rounded-xl border border-stone-300 px-3 py-2"
           />
         </div>
         <div>
@@ -109,7 +109,7 @@ export function ProfilePage() {
             name="favorite_genre_keys"
             defaultValue={profile.favorite_genre_keys.join(", ")}
             placeholder="fantasy, classic"
-            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+            className="w-full rounded-xl border border-stone-300 px-3 py-2"
           />
         </div>
 

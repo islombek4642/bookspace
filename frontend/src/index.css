@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/*
+ * Telegram's in-app WebView (Android in particular) auto-inverts colors
+ * for elements that don't set an explicit background/text color, to match
+ * the client's dark theme. The whole app is light-only for MVP, so the
+ * canvas needs an explicit color pair here -- otherwise the page renders
+ * with the client's dark background under any element we didn't style
+ * directly (see index.html's `color-scheme` meta for the other half of
+ * this fix).
+ */
+body {
+  @apply bg-stone-50 text-stone-900;
+}

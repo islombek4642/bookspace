@@ -60,7 +60,7 @@ export function EntryDetailPage() {
             id="entry-status"
             name="status"
             defaultValue={entry.status}
-            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+            className="w-full rounded-xl border border-stone-300 px-3 py-2"
           >
             <option value="planned">Rejalashtirilgan</option>
             <option value="reading">O'qilmoqda</option>
@@ -78,7 +78,7 @@ export function EntryDetailPage() {
               type="date"
               name="started_at"
               defaultValue={entry.started_at ?? ""}
-              className="w-full rounded-lg border border-stone-300 px-3 py-2"
+              className="w-full rounded-xl border border-stone-300 px-3 py-2"
             />
           </div>
           <div className="flex-1">
@@ -90,7 +90,7 @@ export function EntryDetailPage() {
               type="date"
               name="finished_at"
               defaultValue={entry.finished_at ?? ""}
-              className="w-full rounded-lg border border-stone-300 px-3 py-2"
+              className="w-full rounded-xl border border-stone-300 px-3 py-2"
             />
           </div>
         </div>
@@ -104,7 +104,7 @@ export function EntryDetailPage() {
             name="characters_notes"
             defaultValue={entry.characters_notes ?? ""}
             placeholder="Asosiy qahramonlar"
-            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+            className="w-full rounded-xl border border-stone-300 px-3 py-2"
           />
         </div>
 
@@ -117,7 +117,7 @@ export function EntryDetailPage() {
             name="personal_thoughts"
             defaultValue={entry.personal_thoughts ?? ""}
             placeholder="Shaxsiy fikringiz"
-            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+            className="w-full rounded-xl border border-stone-300 px-3 py-2"
           />
         </div>
 
@@ -129,7 +129,7 @@ export function EntryDetailPage() {
             id="entry-rating"
             name="rating"
             defaultValue={entry.rating ?? ""}
-            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+            className="w-full rounded-xl border border-stone-300 px-3 py-2"
           >
             <option value="">Baho yo'q</option>
             {[1, 2, 3, 4, 5].map((value) => (
