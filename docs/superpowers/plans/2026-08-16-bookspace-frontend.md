@@ -702,7 +702,7 @@ import { LibraryItem } from "./useLibrary";
 export function LibraryCard({ item }: { item: LibraryItem }) {
   return (
     <Link
-      to={`/entries/${item.entry_id}`}
+      to={`/read/${item.entry_id}`}
       className="mb-4 block break-inside-avoid overflow-hidden rounded-2xl bg-white shadow-sm transition-shadow hover:shadow-md"
     >
       {item.book_cover_url && (
@@ -884,7 +884,7 @@ describe("AddBookPage", () => {
       <MemoryRouter initialEntries={["/add-book"]}>
         <Routes>
           <Route path="/add-book" element={<AddBookPage />} />
-          <Route path="/entries/:id" element={<div>Entry page 900</div>} />
+          <Route path="/read/:id" element={<div>Entry page 900</div>} />
         </Routes>
       </MemoryRouter>
     );
@@ -944,7 +944,7 @@ export function AddBookPage() {
 
   async function startEntryFor(book: Book) {
     const entry = await apiClient.post<Entry>("/entries", { book_id: book.id, status: "reading" });
-    navigate(`/entries/${entry.id}`);
+    navigate(`/read/${entry.id}`);
   }
 
   async function handleSearch(event: FormEvent) {
@@ -1117,9 +1117,9 @@ describe("EntryDetailPage", () => {
     const user = userEvent.setup();
 
     render(
-      <MemoryRouter initialEntries={["/entries/1"]}>
+      <MemoryRouter initialEntries={["/read/1"]}>
         <Routes>
-          <Route path="/entries/:id" element={<EntryDetailPage />} />
+          <Route path="/read/:id" element={<EntryDetailPage />} />
         </Routes>
       </MemoryRouter>
     );
@@ -1873,7 +1873,7 @@ function AppRoutes() {
         <Route path="/" element={<LibraryPage />} />
         <Route path="/favorites" element={<FavoritesPage />} />
         <Route path="/add-book" element={<AddBookPage />} />
-        <Route path="/entries/:id" element={<EntryDetailPage />} />
+        <Route path="/read/:id" element={<EntryDetailPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
@@ -1915,6 +1915,12 @@ Expected: succeeds, producing a `dist/` directory containing `index.html` and ha
 git add frontend/src/components/BottomNav.tsx frontend/src/App.tsx frontend/src/App.test.tsx
 git commit -m "feat: wire routing, auth gate, and bottom navigation into App shell"
 ```
+
+---
+
+## Note: why the entry-detail route is `/read/:id`, not `/entries/:id`
+
+The backend already owns the path `/entries/{entry_id}` as a JSON API route (`GET`/`PATCH`, from the backend plan's Task 12). Since the built frontend and the API share the same origin (the backend serves the SPA's static files itself — see the backend plan's Task 17 and its SPA-fallback follow-up fix), a client-side route at the same path would collide: a direct browser navigation or refresh at `/entries/42` would hit the backend's JSON API (and 401, since it requires a Bearer token) instead of loading the SPA shell. This was caught during backend code review before any frontend code existed, so the client-side route here uses `/read/:id` instead — no code changes needed elsewhere, since the frontend was not yet built when this was fixed. `apiClient` calls to `/entries/...` (fetching the entry, quotes, etc.) are unaffected — those correctly target the real backend API and are not client-side routes.
 
 ---
 
