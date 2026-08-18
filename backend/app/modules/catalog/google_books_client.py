@@ -40,12 +40,19 @@ async def search_books(query: str, client: httpx.AsyncClient | None = None) -> l
         volume_info = item.get("volumeInfo", {})
         authors = volume_info.get("authors") or []
         image_links = volume_info.get("imageLinks") or {}
+        thumbnail = image_links.get("thumbnail")
+        # The Google Books API always returns thumbnail URLs as http://,
+        # which browsers block as mixed content on an https:// page (the
+        # Mini App is always served over https). Google Books serves the
+        # same image over https too, so just upgrade the scheme.
+        if thumbnail and thumbnail.startswith("http://"):
+            thumbnail = "https://" + thumbnail[len("http://") :]
         results.append(
             GoogleBooksResult(
                 external_id=item["id"],
                 title=volume_info.get("title", ""),
                 author=", ".join(authors) if authors else None,
-                cover_url=image_links.get("thumbnail"),
+                cover_url=thumbnail,
                 description=volume_info.get("description"),
             )
         )
