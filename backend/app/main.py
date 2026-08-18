@@ -1,10 +1,12 @@
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 from app.core.errors import AppError, app_error_handler
+from app.locale import t
 from app.modules.auth.router import router as auth_router
 from app.modules.bot.webhook_router import router as bot_router
 from app.modules.catalog.router import router as catalog_router
@@ -16,7 +18,16 @@ from app.modules.users.router import router as users_router
 
 app = FastAPI(title="BookSpace API")
 
+
+async def validation_error_handler(request: Request, exc: RequestValidationError) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content={"error_key": "error.validation_error", "message": t("error.validation_error")},
+    )
+
+
 app.add_exception_handler(AppError, app_error_handler)
+app.add_exception_handler(RequestValidationError, validation_error_handler)
 
 app.include_router(auth_router)
 app.include_router(users_router)
