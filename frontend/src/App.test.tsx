@@ -1,10 +1,33 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
 
 describe("App", () => {
-  it("renders the app shell", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    delete window.Telegram;
+  });
+
+  it("shows the session-expired message when there is no Telegram initData", async () => {
     render(<App />);
-    expect(screen.getByText("BookSpace")).toBeInTheDocument();
+
+    await waitFor(() =>
+      expect(screen.getByText("Sessiya eskirgan, ilovani qayta oching.")).toBeInTheDocument()
+    );
+  });
+
+  it("renders the library page once Telegram authentication succeeds", async () => {
+    window.Telegram = { WebApp: { initData: "fake-init-data", ready: vi.fn(), expand: vi.fn() } };
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ access_token: "token", token_type: "bearer" }), { status: 200 })
+      )
+      .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<App />);
+
+    await waitFor(() => expect(screen.getByText("Hali kitob qo'shilmagan.")).toBeInTheDocument());
   });
 });
