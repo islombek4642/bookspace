@@ -1829,32 +1829,62 @@ interface Profile {
 
 export function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    apiClient.get<Profile>("/users/me").then(setProfile);
+    let ignore = false;
+    setLoading(true);
+    setLoadError(false);
+    apiClient
+      .get<Profile>("/users/me")
+      .then((data) => {
+        if (!ignore) setProfile(data);
+      })
+      .catch(() => {
+        if (!ignore) setLoadError(true);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
+    return () => {
+      ignore = true;
+    };
   }, []);
 
-  if (!profile) {
+  if (loading) {
     return <p className="p-4 text-center text-stone-500">Yuklanmoqda...</p>;
+  }
+
+  if (loadError || !profile) {
+    return <p className="p-4 text-center text-stone-500">Profilni yuklab bo'lmadi.</p>;
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (saving) return;
     setSaving(true);
+    setError(null);
     const formData = new FormData(event.currentTarget);
     const genreKeys = (formData.get("favorite_genre_keys") as string)
       .split(",")
       .map((key) => key.trim())
       .filter(Boolean);
 
-    const updated = await apiClient.patch<Profile>("/users/me", {
-      bio: (formData.get("bio") as string) || null,
-      reading_since: (formData.get("reading_since") as string) || null,
-      favorite_genre_keys: genreKeys,
-    });
-    setProfile(updated);
-    setSaving(false);
+    try {
+      const updated = await apiClient.patch<Profile>("/users/me", {
+        bio: (formData.get("bio") as string) || null,
+        reading_since: (formData.get("reading_since") as string) || null,
+        favorite_genre_keys: genreKeys,
+      });
+      setProfile(updated);
+    } catch {
+      setError("Saqlashda xatolik yuz berdi.");
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -1898,6 +1928,9 @@ export function ProfilePage() {
             className="w-full rounded-lg border border-stone-300 px-3 py-2"
           />
         </div>
+
+        {error && <p className="text-red-600">{error}</p>}
+
         <button
           type="submit"
           disabled={saving}
