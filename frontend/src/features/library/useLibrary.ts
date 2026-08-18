@@ -18,17 +18,40 @@ export interface LibraryItem {
 export function useLibrary(favoritesOnly = false) {
   const [items, setItems] = useState<LibraryItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   function reload() {
     setLoading(true);
+    setError(false);
     const query = favoritesOnly ? "?favorites_only=true" : "";
     apiClient
       .get<LibraryItem[]>(`/library${query}`)
       .then(setItems)
+      .catch(() => setError(true))
       .finally(() => setLoading(false));
   }
 
-  useEffect(reload, [favoritesOnly]);
+  useEffect(() => {
+    let ignore = false;
+    setLoading(true);
+    setError(false);
+    const query = favoritesOnly ? "?favorites_only=true" : "";
+    apiClient
+      .get<LibraryItem[]>(`/library${query}`)
+      .then((data) => {
+        if (!ignore) setItems(data);
+      })
+      .catch(() => {
+        if (!ignore) setError(true);
+      })
+      .finally(() => {
+        if (!ignore) setLoading(false);
+      });
 
-  return { items, loading, reload };
+    return () => {
+      ignore = true;
+    };
+  }, [favoritesOnly]);
+
+  return { items, loading, error, reload };
 }

@@ -53,4 +53,21 @@ describe("LibraryPage", () => {
 
     await waitFor(() => expect(screen.getByText("Hali kitob qo'shilmagan.")).toBeInTheDocument());
   });
+
+  it("shows an error message when the fetch fails", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ error_key: "error.unknown", message: "Noma'lum xatolik" }), {
+        status: 500,
+      })
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <MemoryRouter>
+        <LibraryPage />
+      </MemoryRouter>
+    );
+
+    await waitFor(() => expect(screen.getByText("Kutubxonani yuklab bo'lmadi.")).toBeInTheDocument());
+  });
 });
