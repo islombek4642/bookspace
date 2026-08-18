@@ -1036,13 +1036,19 @@ export function AddBookPage() {
 
   return (
     <div className="space-y-6 p-4">
-      <form onSubmit={handleSearch} className="flex gap-2">
-        <input
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-          placeholder="Kitob nomini kiriting"
-          className="flex-1 rounded-lg border border-stone-300 px-3 py-2"
-        />
+      <form onSubmit={handleSearch} className="flex items-end gap-2">
+        <div className="flex-1">
+          <label htmlFor="search-query" className="mb-1 block text-sm font-medium text-stone-700">
+            Kitob qidirish
+          </label>
+          <input
+            id="search-query"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Kitob nomini kiriting"
+            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+          />
+        </div>
         <button type="submit" className="rounded-full bg-amber-800 px-4 py-2 text-white transition-colors hover:bg-amber-900 active:scale-[0.98]">
           Qidirish
         </button>
@@ -1066,26 +1072,44 @@ export function AddBookPage() {
       {searched && results.length === 0 && (
         <div className="space-y-3 border-t pt-4">
           <p className="text-stone-600">Kitob topilmadi. Qo'lda qo'shing:</p>
-          <form onSubmit={handleManualSubmit} className="space-y-2">
-            <input
-              value={manualTitle}
-              onChange={(event) => setManualTitle(event.target.value)}
-              placeholder="Kitob nomi"
-              required
-              className="w-full rounded-lg border border-stone-300 px-3 py-2"
-            />
-            <input
-              value={manualAuthor}
-              onChange={(event) => setManualAuthor(event.target.value)}
-              placeholder="Muallif"
-              className="w-full rounded-lg border border-stone-300 px-3 py-2"
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={(event) => setManualCoverFile(event.target.files?.[0] ?? null)}
-              className="w-full text-sm"
-            />
+          <form onSubmit={handleManualSubmit} className="space-y-3">
+            <div>
+              <label htmlFor="manual-title" className="mb-1 block text-sm font-medium text-stone-700">
+                Kitob nomi
+              </label>
+              <input
+                id="manual-title"
+                value={manualTitle}
+                onChange={(event) => setManualTitle(event.target.value)}
+                placeholder="Kitob nomi"
+                required
+                className="w-full rounded-lg border border-stone-300 px-3 py-2"
+              />
+            </div>
+            <div>
+              <label htmlFor="manual-author" className="mb-1 block text-sm font-medium text-stone-700">
+                Muallif
+              </label>
+              <input
+                id="manual-author"
+                value={manualAuthor}
+                onChange={(event) => setManualAuthor(event.target.value)}
+                placeholder="Muallif"
+                className="w-full rounded-lg border border-stone-300 px-3 py-2"
+              />
+            </div>
+            <div>
+              <label htmlFor="manual-cover" className="mb-1 block text-sm font-medium text-stone-700">
+                Muqova rasmi (ixtiyoriy)
+              </label>
+              <input
+                id="manual-cover"
+                type="file"
+                accept="image/*"
+                onChange={(event) => setManualCoverFile(event.target.files?.[0] ?? null)}
+                className="w-full text-sm"
+              />
+            </div>
             <button type="submit" className="rounded-full bg-amber-800 px-4 py-2 text-white transition-colors hover:bg-amber-900 active:scale-[0.98]">
               Qo'shish
             </button>
@@ -1318,57 +1342,93 @@ export function EntryDetailPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
-        <select
-          name="status"
-          defaultValue={entry.status}
-          className="w-full rounded-lg border border-stone-300 px-3 py-2"
-        >
-          <option value="planned">Rejalashtirilgan</option>
-          <option value="reading">O'qilmoqda</option>
-          <option value="finished">Tugallandi</option>
-        </select>
+        <div>
+          <label htmlFor="entry-status" className="mb-1 block text-sm font-medium text-stone-700">
+            Holat
+          </label>
+          <select
+            id="entry-status"
+            name="status"
+            defaultValue={entry.status}
+            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+          >
+            <option value="planned">Rejalashtirilgan</option>
+            <option value="reading">O'qilmoqda</option>
+            <option value="finished">Tugallandi</option>
+          </select>
+        </div>
 
         <div className="flex gap-2">
-          <input
-            type="date"
-            name="started_at"
-            defaultValue={entry.started_at ?? ""}
-            className="flex-1 rounded-lg border border-stone-300 px-3 py-2"
-          />
-          <input
-            type="date"
-            name="finished_at"
-            defaultValue={entry.finished_at ?? ""}
-            className="flex-1 rounded-lg border border-stone-300 px-3 py-2"
+          <div className="flex-1">
+            <label htmlFor="entry-started-at" className="mb-1 block text-sm font-medium text-stone-700">
+              Boshlangan sana
+            </label>
+            <input
+              id="entry-started-at"
+              type="date"
+              name="started_at"
+              defaultValue={entry.started_at ?? ""}
+              className="w-full rounded-lg border border-stone-300 px-3 py-2"
+            />
+          </div>
+          <div className="flex-1">
+            <label htmlFor="entry-finished-at" className="mb-1 block text-sm font-medium text-stone-700">
+              Tugatilgan sana
+            </label>
+            <input
+              id="entry-finished-at"
+              type="date"
+              name="finished_at"
+              defaultValue={entry.finished_at ?? ""}
+              className="w-full rounded-lg border border-stone-300 px-3 py-2"
+            />
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="entry-characters" className="mb-1 block text-sm font-medium text-stone-700">
+            Asosiy qahramonlar
+          </label>
+          <textarea
+            id="entry-characters"
+            name="characters_notes"
+            defaultValue={entry.characters_notes ?? ""}
+            placeholder="Asosiy qahramonlar"
+            className="w-full rounded-lg border border-stone-300 px-3 py-2"
           />
         </div>
 
-        <textarea
-          name="characters_notes"
-          defaultValue={entry.characters_notes ?? ""}
-          placeholder="Asosiy qahramonlar"
-          className="w-full rounded-lg border border-stone-300 px-3 py-2"
-        />
+        <div>
+          <label htmlFor="entry-thoughts" className="mb-1 block text-sm font-medium text-stone-700">
+            Shaxsiy fikringiz
+          </label>
+          <textarea
+            id="entry-thoughts"
+            name="personal_thoughts"
+            defaultValue={entry.personal_thoughts ?? ""}
+            placeholder="Shaxsiy fikringiz"
+            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+          />
+        </div>
 
-        <textarea
-          name="personal_thoughts"
-          defaultValue={entry.personal_thoughts ?? ""}
-          placeholder="Shaxsiy fikringiz"
-          className="w-full rounded-lg border border-stone-300 px-3 py-2"
-        />
-
-        <select
-          name="rating"
-          defaultValue={entry.rating ?? ""}
-          className="w-full rounded-lg border border-stone-300 px-3 py-2"
-        >
-          <option value="">Baho yo'q</option>
-          {[1, 2, 3, 4, 5].map((value) => (
-            <option key={value} value={value}>
-              {value}
-            </option>
-          ))}
-        </select>
+        <div>
+          <label htmlFor="entry-rating" className="mb-1 block text-sm font-medium text-stone-700">
+            Bahoingiz
+          </label>
+          <select
+            id="entry-rating"
+            name="rating"
+            defaultValue={entry.rating ?? ""}
+            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+          >
+            <option value="">Baho yo'q</option>
+            {[1, 2, 3, 4, 5].map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <label className="flex items-center gap-2">
           <input type="checkbox" name="is_favorite" defaultChecked={entry.is_favorite} />
@@ -1520,13 +1580,19 @@ export function QuoteList({ entryId, quotes, onChange }: QuoteListProps) {
           </li>
         ))}
       </ul>
-      <form onSubmit={handleAdd} className="flex gap-2">
-        <input
-          value={text}
-          onChange={(event) => setText(event.target.value)}
-          placeholder="Yangi iqtibos"
-          className="flex-1 rounded-lg border border-stone-300 px-3 py-2"
-        />
+      <form onSubmit={handleAdd} className="flex items-end gap-2">
+        <div className="flex-1">
+          <label htmlFor="new-quote" className="mb-1 block text-sm font-medium text-stone-700">
+            Yangi iqtibos
+          </label>
+          <input
+            id="new-quote"
+            value={text}
+            onChange={(event) => setText(event.target.value)}
+            placeholder="Yangi iqtibos"
+            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+          />
+        </div>
         <button type="submit" className="rounded-full bg-amber-800 px-4 py-2 text-white transition-colors hover:bg-amber-900 active:scale-[0.98]">
           Qo'shish
         </button>
@@ -1672,24 +1738,42 @@ export function ProfilePage() {
       <h1 className="text-xl font-bold">{profile.display_name ?? profile.username}</h1>
 
       <form onSubmit={handleSubmit} className="space-y-3">
-        <textarea
-          name="bio"
-          defaultValue={profile.bio ?? ""}
-          placeholder="O'zingiz haqingizda qisqacha yozing..."
-          className="w-full rounded-lg border border-stone-300 px-3 py-2"
-        />
-        <input
-          type="date"
-          name="reading_since"
-          defaultValue={profile.reading_since ?? ""}
-          className="w-full rounded-lg border border-stone-300 px-3 py-2"
-        />
-        <input
-          name="favorite_genre_keys"
-          defaultValue={profile.favorite_genre_keys.join(", ")}
-          placeholder="fantasy, classic"
-          className="w-full rounded-lg border border-stone-300 px-3 py-2"
-        />
+        <div>
+          <label htmlFor="profile-bio" className="mb-1 block text-sm font-medium text-stone-700">
+            O'zingiz haqingizda
+          </label>
+          <textarea
+            id="profile-bio"
+            name="bio"
+            defaultValue={profile.bio ?? ""}
+            placeholder="O'zingiz haqingizda qisqacha yozing..."
+            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+          />
+        </div>
+        <div>
+          <label htmlFor="profile-reading-since" className="mb-1 block text-sm font-medium text-stone-700">
+            Qachondan beri kitob o'qiysiz
+          </label>
+          <input
+            id="profile-reading-since"
+            type="date"
+            name="reading_since"
+            defaultValue={profile.reading_since ?? ""}
+            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+          />
+        </div>
+        <div>
+          <label htmlFor="profile-genres" className="mb-1 block text-sm font-medium text-stone-700">
+            Sevimli janrlar (vergul bilan ajrating)
+          </label>
+          <input
+            id="profile-genres"
+            name="favorite_genre_keys"
+            defaultValue={profile.favorite_genre_keys.join(", ")}
+            placeholder="fantasy, classic"
+            className="w-full rounded-lg border border-stone-300 px-3 py-2"
+          />
+        </div>
         <button
           type="submit"
           disabled={saving}
