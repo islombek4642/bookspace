@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     r2_access_key_id: str = ""
     r2_secret_access_key: str = ""
     r2_bucket_name: str = "bookspace-media"
+    r2_public_url: str = ""
     webapp_url: str = "https://example.com"
     telegram_webhook_secret: str = ""
 

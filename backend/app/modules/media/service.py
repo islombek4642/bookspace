@@ -22,4 +22,8 @@ def upload_cover_image(file_bytes: bytes, content_type: str) -> str:
         Body=file_bytes,
         ContentType=content_type,
     )
-    return f"{settings.r2_endpoint_url}/{settings.r2_bucket_name}/{key}"
+    # r2_endpoint_url is R2's S3 API endpoint, which requires a signed
+    # request even to read -- it's not a public URL, so <img src> can't
+    # load from it. r2_public_url is the bucket's actual public URL
+    # (the pub-*.r2.dev dev URL, or a connected custom domain).
+    return f"{settings.r2_public_url.rstrip('/')}/{key}"
