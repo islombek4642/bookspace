@@ -25,6 +25,7 @@ async def authenticate_telegram(db: AsyncSession, init_data: str) -> str:
             telegram_id=telegram_id,
             username=user_data.get("username"),
             display_name=user_data.get("first_name"),
+            last_name=user_data.get("last_name"),
             avatar_url=user_data.get("photo_url"),
         )
         db.add(user)

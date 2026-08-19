@@ -11,6 +11,7 @@ const baseProfile = {
   id: 1,
   username: "reader",
   display_name: "Aziz",
+  last_name: null,
   avatar_url: null,
   bio: null,
   reading_since: null,
@@ -54,6 +55,15 @@ describe("ProfilePage", () => {
     const fallback = await screen.findByRole("img", { name: "Aziz" });
     expect(fallback).not.toHaveAttribute("src");
     expect(fallback).toHaveTextContent("A");
+  });
+
+  it("shows the last name alongside the first name", async () => {
+    const profile = { ...baseProfile, last_name: "Qambarov" };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(jsonResponse(profile)));
+
+    render(<ProfilePage />);
+
+    await waitFor(() => expect(screen.getByText("Aziz Qambarov")).toBeInTheDocument());
   });
 
   it("shows profile details read-only until Tahrirlash is pressed", async () => {

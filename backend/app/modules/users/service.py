@@ -10,6 +10,7 @@ def to_profile_dict(user: User) -> dict:
         "id": user.id,
         "username": user.username,
         "display_name": user.display_name,
+        "last_name": user.last_name,
         "avatar_url": user.avatar_url,
         "bio": user.bio,
         "reading_since": user.reading_since,

@@ -5,6 +5,7 @@ interface Profile {
   id: number;
   username: string | null;
   display_name: string | null;
+  last_name: string | null;
   avatar_url: string | null;
   bio: string | null;
   reading_since: string | null;
@@ -104,7 +105,8 @@ export function ProfilePage() {
     }
   }
 
-  const displayName = profile.display_name ?? profile.username ?? "?";
+  const displayName =
+    [profile.display_name, profile.last_name].filter(Boolean).join(" ") || profile.username || "?";
 
   return (
     <div className="space-y-6 p-4">

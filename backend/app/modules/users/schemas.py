@@ -7,6 +7,7 @@ class UserProfileOut(BaseModel):
     id: int
     username: str | None
     display_name: str | None
+    last_name: str | None
     avatar_url: str | None
     bio: str | None
     reading_since: date | None
