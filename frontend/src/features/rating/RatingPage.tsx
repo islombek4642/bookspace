@@ -61,6 +61,8 @@ export function RatingPage() {
 
       {stats.total_finished === 0 ? (
         <p className="p-4 text-center text-stone-500">Hali statistika yo'q — birinchi kitobingizni tugating.</p>
+      ) : stats.monthly_breakdown.every((m) => m.count === 0) ? (
+        <p className="p-4 text-center text-stone-500">So'nggi 12 oyda kitob tugatilmagan.</p>
       ) : (
         <MonthlyChart monthlyBreakdown={stats.monthly_breakdown} />
       )}

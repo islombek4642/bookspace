@@ -58,6 +58,24 @@ describe("RatingPage", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("shows a no-recent-activity message instead of a flat chart when all finishes are older than 12 months", async () => {
+    const body = statsResponse({
+      total_finished: 2,
+      finished_this_year: 0,
+      finished_this_month: 0,
+      average_rating: 4.0,
+    });
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<RatingPage />);
+
+    await waitFor(() => expect(screen.getByText("So'nggi 12 oyda kitob tugatilmagan.")).toBeInTheDocument());
+    expect(
+      screen.queryByText("Hali statistika yo'q — birinchi kitobingizni tugating.")
+    ).not.toBeInTheDocument();
+  });
+
   it("shows an error message when the request fails", async () => {
     const fetchMock = vi.fn().mockRejectedValue(new Error("network error"));
     vi.stubGlobal("fetch", fetchMock);
