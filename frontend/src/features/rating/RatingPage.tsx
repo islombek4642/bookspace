@@ -11,21 +11,26 @@ function MonthlyChart({ monthlyBreakdown }: { monthlyBreakdown: Stats["monthly_b
   const maxCount = Math.max(...monthlyBreakdown.map((m) => m.count));
 
   return (
-    <div className="flex items-end justify-between gap-1 px-4 pb-4">
-      {monthlyBreakdown.map((m) => (
-        <div key={m.month} className="flex flex-1 flex-col items-center gap-1">
-          {/* Fixed-height track so the bar's percentage height has a definite
-              size to resolve against -- a percentage height on an element
-              whose parent has no explicit height computes to nothing. */}
-          <div className="flex h-24 w-full items-end">
-            <div
-              className="w-full rounded-t bg-amber-800"
-              style={{ height: `${maxCount === 0 ? 0 : (m.count / maxCount) * 100}%` }}
-            />
+    <div className="rounded-xl bg-white p-4 shadow-sm">
+      <p className="mb-3 text-xs text-stone-500">So'nggi 12 oy</p>
+      <div className="flex items-end justify-between gap-1">
+        {monthlyBreakdown.map((m) => (
+          <div key={m.month} className="flex flex-1 flex-col items-center gap-1">
+            {/* Fixed-height track so the bar's percentage height has a definite
+                size to resolve against -- a percentage height on an element
+                whose parent has no explicit height computes to nothing. The
+                track itself stays visible (bg-stone-100) even at 0%, so the
+                12-column grid reads as a chart instead of empty space. */}
+            <div className="flex h-24 w-full items-end overflow-hidden rounded-t bg-stone-100">
+              <div
+                className="w-full rounded-t bg-amber-800"
+                style={{ height: `${maxCount === 0 ? 0 : (m.count / maxCount) * 100}%` }}
+              />
+            </div>
+            <span className="text-[10px] text-stone-500">{monthLabel(m.month)}</span>
           </div>
-          <span className="text-[10px] text-stone-500">{monthLabel(m.month)}</span>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }
@@ -69,7 +74,9 @@ export function RatingPage() {
       ) : stats.monthly_breakdown.every((m) => m.count === 0) ? (
         <p className="p-4 text-center text-stone-500">So'nggi 12 oyda kitob tugatilmagan.</p>
       ) : (
-        <MonthlyChart monthlyBreakdown={stats.monthly_breakdown} />
+        <div className="px-4">
+          <MonthlyChart monthlyBreakdown={stats.monthly_breakdown} />
+        </div>
       )}
     </div>
   );
