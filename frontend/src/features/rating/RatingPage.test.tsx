@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -217,5 +217,59 @@ describe("RatingPage", () => {
     await user.click(screen.getByRole("button", { name: "Reyting jadvali" }));
 
     await waitFor(() => expect(screen.getByText("Hali reyting jadvali bo'sh.")).toBeInTheDocument());
+  });
+
+  it("shows the telegram avatar photo for a leaderboard entry when avatar_url is set", async () => {
+    const leaderboard = leaderboardResponse({
+      top: [
+        {
+          user_id: 1,
+          username: "aziz",
+          display_name: "Aziz",
+          last_name: null,
+          avatar_url: "https://t.me/i/userpic/320/example.jpg",
+          total_finished: 7,
+        },
+      ],
+    });
+    vi.stubGlobal("fetch", mockFetch(statsResponse(), [], leaderboard));
+
+    renderPage();
+
+    const user = userEvent.setup();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Reyting jadvali" })).toBeInTheDocument());
+    await user.click(screen.getByRole("button", { name: "Reyting jadvali" }));
+
+    const img = await screen.findByRole("img", { name: "Aziz" });
+    expect(img).toHaveAttribute("src", "https://t.me/i/userpic/320/example.jpg");
+  });
+
+  it("falls back to an initial when a leaderboard entry's avatar fails to load", async () => {
+    const leaderboard = leaderboardResponse({
+      top: [
+        {
+          user_id: 1,
+          username: "aziz",
+          display_name: "Aziz",
+          last_name: null,
+          avatar_url: "https://t.me/i/userpic/320/example.mp4",
+          total_finished: 7,
+        },
+      ],
+    });
+    vi.stubGlobal("fetch", mockFetch(statsResponse(), [], leaderboard));
+
+    renderPage();
+
+    const user = userEvent.setup();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Reyting jadvali" })).toBeInTheDocument());
+    await user.click(screen.getByRole("button", { name: "Reyting jadvali" }));
+
+    const img = await screen.findByRole("img", { name: "Aziz" });
+    fireEvent.error(img);
+
+    const fallback = await screen.findByRole("img", { name: "Aziz" });
+    expect(fallback).not.toHaveAttribute("src");
+    expect(fallback).toHaveTextContent("A");
   });
 });
