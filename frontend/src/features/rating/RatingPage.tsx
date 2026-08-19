@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
 import { LibraryItem, useLibrary } from "../library/useLibrary";
+import { LeaderboardTab } from "./LeaderboardTab";
 import { Stats, useStats } from "./useStats";
 
 const MONTH_LABELS = ["Yan", "Fev", "Mar", "Apr", "May", "Iyn", "Iyl", "Avg", "Sen", "Okt", "Noy", "Dek"];
@@ -85,7 +87,7 @@ function TopRatedBooks() {
   );
 }
 
-export function RatingPage() {
+function PersonalStatsTab() {
   const { stats, loading, error } = useStats();
 
   if (loading) {
@@ -131,6 +133,39 @@ export function RatingPage() {
           <TopRatedBooks />
         </div>
       )}
+    </div>
+  );
+}
+
+type Tab = "personal" | "leaderboard";
+
+export function RatingPage() {
+  const [tab, setTab] = useState<Tab>("personal");
+
+  return (
+    <div>
+      <div className="flex gap-2 px-4 pt-4">
+        <button
+          type="button"
+          onClick={() => setTab("personal")}
+          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+            tab === "personal" ? "bg-amber-800 text-white" : "bg-white text-stone-500"
+          }`}
+        >
+          Mening statistikam
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("leaderboard")}
+          className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
+            tab === "leaderboard" ? "bg-amber-800 text-white" : "bg-white text-stone-500"
+          }`}
+        >
+          Reyting jadvali
+        </button>
+      </div>
+
+      {tab === "personal" ? <PersonalStatsTab /> : <LeaderboardTab />}
     </div>
   );
 }

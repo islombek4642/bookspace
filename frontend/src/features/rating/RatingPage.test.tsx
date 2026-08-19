@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { RatingPage } from "./RatingPage";
@@ -34,10 +35,21 @@ function libraryItem(overrides: Record<string, unknown> = {}) {
   };
 }
 
-function mockFetch(stats: unknown, library: unknown[] = []) {
+function leaderboardResponse(overrides: Record<string, unknown> = {}) {
+  return {
+    top: [],
+    my_rank: null,
+    ...overrides,
+  };
+}
+
+function mockFetch(stats: unknown, library: unknown[] = [], leaderboard: unknown = leaderboardResponse()) {
   return vi.fn((url: string) => {
     if (url.includes("/stats")) {
       return Promise.resolve(new Response(JSON.stringify(stats), { status: 200 }));
+    }
+    if (url.includes("/leaderboard")) {
+      return Promise.resolve(new Response(JSON.stringify(leaderboard), { status: 200 }));
     }
     if (url.includes("/library")) {
       return Promise.resolve(new Response(JSON.stringify(library), { status: 200 }));
@@ -157,5 +169,53 @@ describe("RatingPage", () => {
 
     await waitFor(() => expect(screen.getByText("So'nggi 12 oyda kitob tugatilmagan.")).toBeInTheDocument());
     expect(screen.queryByText("Eng yuqori baholangan")).not.toBeInTheDocument();
+  });
+
+  it("switches to the leaderboard tab and shows ranked entries with the caller's own rank", async () => {
+    const leaderboard = leaderboardResponse({
+      top: [
+        {
+          user_id: 1,
+          username: "birinchi",
+          display_name: "Birinchi Foydalanuvchi",
+          last_name: null,
+          avatar_url: null,
+          total_finished: 10,
+        },
+        {
+          user_id: 2,
+          username: "ikkinchi",
+          display_name: null,
+          last_name: null,
+          avatar_url: null,
+          total_finished: 5,
+        },
+      ],
+      my_rank: { rank: 34, total_finished: 2 },
+    });
+    vi.stubGlobal("fetch", mockFetch(statsResponse(), [], leaderboard));
+
+    renderPage();
+
+    const user = userEvent.setup();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Reyting jadvali" })).toBeInTheDocument());
+    await user.click(screen.getByRole("button", { name: "Reyting jadvali" }));
+
+    await waitFor(() => expect(screen.getByText("Birinchi Foydalanuvchi")).toBeInTheDocument());
+    expect(screen.getByText("10 kitob")).toBeInTheDocument();
+    expect(screen.getByText("ikkinchi")).toBeInTheDocument();
+    expect(screen.getByText("Sizning o'rningiz: #34 — 2 kitob")).toBeInTheDocument();
+  });
+
+  it("shows an empty leaderboard message when nobody has finished any books", async () => {
+    vi.stubGlobal("fetch", mockFetch(statsResponse(), [], leaderboardResponse()));
+
+    renderPage();
+
+    const user = userEvent.setup();
+    await waitFor(() => expect(screen.getByRole("button", { name: "Reyting jadvali" })).toBeInTheDocument());
+    await user.click(screen.getByRole("button", { name: "Reyting jadvali" }));
+
+    await waitFor(() => expect(screen.getByText("Hali reyting jadvali bo'sh.")).toBeInTheDocument());
   });
 });
