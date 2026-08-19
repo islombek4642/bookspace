@@ -11,13 +11,18 @@ function MonthlyChart({ monthlyBreakdown }: { monthlyBreakdown: Stats["monthly_b
   const maxCount = Math.max(...monthlyBreakdown.map((m) => m.count));
 
   return (
-    <div className="flex h-32 items-end justify-between gap-1 px-4 pb-4">
+    <div className="flex items-end justify-between gap-1 px-4 pb-4">
       {monthlyBreakdown.map((m) => (
         <div key={m.month} className="flex flex-1 flex-col items-center gap-1">
-          <div
-            className="w-full rounded-t bg-amber-800"
-            style={{ height: `${maxCount === 0 ? 0 : (m.count / maxCount) * 100}%` }}
-          />
+          {/* Fixed-height track so the bar's percentage height has a definite
+              size to resolve against -- a percentage height on an element
+              whose parent has no explicit height computes to nothing. */}
+          <div className="flex h-24 w-full items-end">
+            <div
+              className="w-full rounded-t bg-amber-800"
+              style={{ height: `${maxCount === 0 ? 0 : (m.count / maxCount) * 100}%` }}
+            />
+          </div>
           <span className="text-[10px] text-stone-500">{monthLabel(m.month)}</span>
         </div>
       ))}
