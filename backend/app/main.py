@@ -2,7 +2,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import FileResponse, JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 
 from app.core.errors import AppError, app_error_handler
@@ -44,27 +44,42 @@ def health() -> dict:
     return {"status": "ok"}
 
 
+class ImmutableStaticFiles(StaticFiles):
+    """Vite gives every asset a content hash in its filename, so a given
+    URL's content never changes -- safe to tell browsers (and Telegram's
+    WebView) to cache it forever instead of re-checking on every load."""
+
+    def file_response(self, *args, **kwargs) -> Response:
+        response = super().file_response(*args, **kwargs)
+        response.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+        return response
+
+
 # Static frontend hosting: only activates once the frontend build lands here
 # (wired up in the Deployment plan). Two parts, registered last so API routes
 # always match first:
-#   1. /assets/* serves Vite's hashed JS/CSS/image bundles directly.
+#   1. /assets/* serves Vite's hashed JS/CSS/image bundles directly, cached
+#      forever since their filenames change whenever their content does.
 #   2. The catch-all serves index.html for any other unmatched GET path, so
 #      client-side routes (e.g. /favorites, /profile) work on direct load
-#      or refresh, not just when navigated to from within the app.
+#      or refresh, not just when navigated to from within the app. index.html
+#      itself is never cached, since it's what points browsers at the
+#      current hashed asset filenames -- caching it would leave users on an
+#      old build after every deploy.
 def _mount_static_frontend(app: FastAPI, static_dir: Path) -> None:
     if not static_dir.exists():
         return
 
     assets_dir = static_dir / "assets"
     if assets_dir.exists():
-        app.mount("/assets", StaticFiles(directory=assets_dir), name="static-assets")
+        app.mount("/assets", ImmutableStaticFiles(directory=assets_dir), name="static-assets")
 
     @app.get("/{full_path:path}", include_in_schema=False)
     async def spa_fallback(full_path: str) -> FileResponse:
         index_file = static_dir / "index.html"
         if not index_file.exists():
             raise HTTPException(status_code=404)
-        return FileResponse(index_file)
+        return FileResponse(index_file, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 
 _static_dir = Path(__file__).resolve().parent.parent / "static"

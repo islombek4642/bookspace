@@ -21,10 +21,12 @@ def test_spa_fallback_serves_index_html_for_unmatched_paths(tmp_path: Path):
     deep_link_response = client.get("/favorites")
     assert deep_link_response.status_code == 200
     assert "BookSpace" in deep_link_response.text
+    assert deep_link_response.headers["cache-control"] == "no-cache, no-store, must-revalidate"
 
     asset_response = client.get("/assets/app.js")
     assert asset_response.status_code == 200
     assert "console.log" in asset_response.text
+    assert asset_response.headers["cache-control"] == "public, max-age=31536000, immutable"
 
 
 def test_spa_fallback_does_nothing_when_static_dir_missing(tmp_path: Path):
