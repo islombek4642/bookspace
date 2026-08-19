@@ -56,7 +56,34 @@ describe("ProfilePage", () => {
     expect(fallback).toHaveTextContent("A");
   });
 
-  it("loads and saves the profile", async () => {
+  it("shows profile details read-only until Tahrirlash is pressed", async () => {
+    const profile = { ...baseProfile, bio: "Fantastika sevaman", reading_since: "2020-05-01" };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(jsonResponse(profile)));
+
+    render(<ProfilePage />);
+
+    await waitFor(() => expect(screen.getByText("Fantastika sevaman")).toBeInTheDocument());
+    expect(screen.getByText("01.05.2020")).toBeInTheDocument();
+    expect(screen.queryByPlaceholderText("O'zingiz haqingizda qisqacha yozing...")).not.toBeInTheDocument();
+  });
+
+  it("opens the edit form only after clicking Tahrirlash, and Bekor qilish closes it again", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(jsonResponse(baseProfile)));
+    const user = userEvent.setup();
+
+    render(<ProfilePage />);
+    await waitFor(() => expect(screen.getByText("Aziz")).toBeInTheDocument());
+
+    expect(screen.queryByPlaceholderText("O'zingiz haqingizda qisqacha yozing...")).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Tahrirlash" }));
+    expect(screen.getByPlaceholderText("O'zingiz haqingizda qisqacha yozing...")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Bekor qilish" }));
+    expect(screen.queryByPlaceholderText("O'zingiz haqingizda qisqacha yozing...")).not.toBeInTheDocument();
+  });
+
+  it("saves the profile from the edit form and returns to the read-only view", async () => {
     const profile = baseProfile;
     const fetchMock = vi
       .fn()
@@ -68,6 +95,7 @@ describe("ProfilePage", () => {
     render(<ProfilePage />);
 
     await waitFor(() => expect(screen.getByText("Aziz")).toBeInTheDocument());
+    await user.click(screen.getByRole("button", { name: "Tahrirlash" }));
 
     await user.type(
       screen.getByPlaceholderText("O'zingiz haqingizda qisqacha yozing..."),
@@ -78,5 +106,10 @@ describe("ProfilePage", () => {
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
     const [, options] = fetchMock.mock.calls[1];
     expect(options.method).toBe("PATCH");
+
+    await waitFor(() =>
+      expect(screen.queryByPlaceholderText("O'zingiz haqingizda qisqacha yozing...")).not.toBeInTheDocument()
+    );
+    expect(screen.getByText("Fantastika sevaman")).toBeInTheDocument();
   });
 });
