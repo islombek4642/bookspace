@@ -29,27 +29,29 @@ function NavItem({ to, label }: { to: string; label: string }) {
 export function BottomNav() {
   return (
     <nav className="fixed bottom-0 left-0 right-0 flex items-center rounded-t-2xl border-t border-stone-200 bg-white px-2 py-2 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
-      <div className="flex flex-1 justify-around">
+      <div className="flex flex-1 justify-around pr-8">
         {LEFT_ITEMS.map((item) => (
           <NavItem key={item.to} {...item} />
         ))}
       </div>
 
+      <div className="flex flex-1 justify-around pl-8">
+        {RIGHT_ITEMS.map((item) => (
+          <NavItem key={item.to} {...item} />
+        ))}
+      </div>
+
+      {/* Positioned independently of the two nav-item groups above, so
+          differing label widths on each side can never pull it off-center. */}
       <NavLink
         to="/add-book"
         aria-label="Qo'shish"
-        className="-mt-6 flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-amber-800 text-white shadow-lg transition-transform hover:bg-amber-900 active:scale-95"
+        className="absolute left-1/2 -top-6 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-amber-800 text-white shadow-lg transition-transform hover:bg-amber-900 active:scale-95"
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" className="h-7 w-7">
           <path d="M12 5v14M5 12h14" />
         </svg>
       </NavLink>
-
-      <div className="flex flex-1 justify-around">
-        {RIGHT_ITEMS.map((item) => (
-          <NavItem key={item.to} {...item} />
-        ))}
-      </div>
     </nav>
   );
 }
