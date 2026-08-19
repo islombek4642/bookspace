@@ -49,7 +49,11 @@ export function BottomNav() {
   const activeIndex = NAV_ITEMS.findIndex((item) => isItemActive(location.pathname, item.to));
 
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-10 grid h-16 grid-cols-5 rounded-t-2xl border-t border-stone-200 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+    // TEMPORARY DIAGNOSTIC: bg-stone-200 instead of bg-white, so the notch
+    // (which always cuts through to the stone-50 page background) is
+    // clearly visible for checking the geometry on a real device. Revert
+    // to bg-white once confirmed.
+    <nav className="fixed inset-x-0 bottom-0 z-10 grid h-16 grid-cols-5 rounded-t-2xl border-t border-stone-200 bg-stone-200 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
       {activeIndex !== -1 && (
         // Geometry (indicator size, notch offsets) is tuned by eye to match
         // the reference design -- see the "Vizual mexanika" section of
@@ -57,7 +61,7 @@ export function BottomNav() {
         // reasoning behind these specific values.
         <div
           data-testid="nav-indicator"
-          className="pointer-events-none absolute -top-7 h-14 w-14 -translate-x-1/2 rounded-full border-[6px] border-stone-50 bg-amber-800 shadow-lg transition-[left] duration-500 before:absolute before:top-1/2 before:-left-[18px] before:h-4 before:w-4 before:rounded-tr-2xl before:shadow-[1px_-8px_0_theme(colors.stone.50)] before:content-[''] after:absolute after:top-1/2 after:-right-[18px] after:h-4 after:w-4 after:rounded-tl-2xl after:shadow-[-1px_-8px_0_theme(colors.stone.50)] after:content-['']"
+          className="pointer-events-none absolute -top-7 h-14 w-14 -translate-x-1/2 rounded-full border-[5px] border-stone-50 bg-amber-800 shadow-lg transition-[left] duration-500 before:absolute before:top-1/2 before:-left-[18px] before:h-4 before:w-4 before:rounded-tr-2xl before:shadow-[1px_-8px_0_theme(colors.stone.50)] before:content-[''] after:absolute after:top-1/2 after:-right-[18px] after:h-4 after:w-4 after:rounded-tl-2xl after:shadow-[-1px_-8px_0_theme(colors.stone.50)] after:content-['']"
           style={{ left: `calc(${COLUMN_WIDTH_PERCENT}% * ${activeIndex} + ${COLUMN_WIDTH_PERCENT / 2}%)` }}
         />
       )}
