@@ -11,6 +11,32 @@ interface Profile {
   favorite_genre_keys: string[];
 }
 
+function ProfileAvatar({ avatarUrl, name }: { avatarUrl: string | null; name: string }) {
+  const [imgFailed, setImgFailed] = useState(false);
+  const initial = name.trim().charAt(0).toUpperCase() || "?";
+
+  if (avatarUrl && !imgFailed) {
+    return (
+      <img
+        src={avatarUrl}
+        alt={name}
+        className="h-20 w-20 rounded-full object-cover shadow-sm"
+        onError={() => setImgFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <div
+      role="img"
+      aria-label={name}
+      className="flex h-20 w-20 items-center justify-center rounded-full bg-amber-800 text-2xl font-semibold text-white shadow-sm"
+    >
+      {initial}
+    </div>
+  );
+}
+
 export function ProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -73,7 +99,13 @@ export function ProfilePage() {
 
   return (
     <div className="space-y-4 p-4">
-      <h1 className="text-xl font-bold">{profile.display_name ?? profile.username}</h1>
+      <div className="flex items-center gap-4">
+        <ProfileAvatar
+          avatarUrl={profile.avatar_url}
+          name={profile.display_name ?? profile.username ?? "?"}
+        />
+        <h1 className="text-xl font-bold">{profile.display_name ?? profile.username}</h1>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
