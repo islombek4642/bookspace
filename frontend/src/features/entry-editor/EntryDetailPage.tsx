@@ -1,10 +1,13 @@
 import { FormEvent, useState } from "react";
 import { useParams } from "react-router-dom";
 import { apiClient } from "../../api/client";
+import { useTelegramBackButton } from "../../hooks/useTelegramBackButton";
 import { QuoteList } from "./QuoteList";
 import { useEntryDetail } from "./useEntryDetail";
 
 export function EntryDetailPage() {
+  useTelegramBackButton();
+
   const { id } = useParams<{ id: string }>();
   const entryId = Number(id);
   const { entry, book, quotes, loading, error: loadError, reload } = useEntryDetail(entryId);
