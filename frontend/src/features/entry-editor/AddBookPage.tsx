@@ -58,8 +58,8 @@ export function AddBookPage() {
   const [error, setError] = useState<string | null>(null);
 
   async function startEntryFor(book: Book, status: string) {
-    const entry = await apiClient.post<Entry>("/entries", { book_id: book.id, status });
-    navigate(`/read/${entry.id}`);
+    await apiClient.post<Entry>("/entries", { book_id: book.id, status });
+    navigate("/");
   }
 
   async function handleSearch(event: FormEvent) {

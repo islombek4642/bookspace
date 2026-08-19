@@ -25,7 +25,7 @@ describe("AddBookPage", () => {
       <MemoryRouter initialEntries={["/add-book"]}>
         <Routes>
           <Route path="/add-book" element={<AddBookPage />} />
-          <Route path="/read/:id" element={<div>Entry page 900</div>} />
+          <Route path="/" element={<div>Library page</div>} />
         </Routes>
       </MemoryRouter>
     );
@@ -38,7 +38,7 @@ describe("AddBookPage", () => {
     await user.type(screen.getByPlaceholderText("Kitob nomi"), "Mening kitobim");
     await user.click(screen.getByRole("button", { name: "Qo'shish" }));
 
-    await waitFor(() => expect(screen.getByText("Entry page 900")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Library page")).toBeInTheDocument());
   });
 
   it("shows a cover image for results that have one, and a placeholder for results that don't", async () => {
@@ -98,7 +98,7 @@ describe("AddBookPage", () => {
       <MemoryRouter initialEntries={["/add-book"]}>
         <Routes>
           <Route path="/add-book" element={<AddBookPage />} />
-          <Route path="/read/:id" element={<div>Entry page 900</div>} />
+          <Route path="/" element={<div>Library page</div>} />
         </Routes>
       </MemoryRouter>
     );
@@ -114,7 +114,7 @@ describe("AddBookPage", () => {
 
     await user.click(screen.getByRole("button", { name: "Saqlash" }));
 
-    await waitFor(() => expect(screen.getByText("Entry page 900")).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText("Library page")).toBeInTheDocument());
     expect(fetchMock).toHaveBeenCalledTimes(3);
     const [, entryCallOptions] = fetchMock.mock.calls[2];
     expect(JSON.parse(entryCallOptions.body as string)).toEqual({ book_id: 42, status: "reading" });
