@@ -15,6 +15,7 @@ from app.modules.entries.router import router as entries_router
 from app.modules.library.router import router as library_router
 from app.modules.media.router import router as media_router
 from app.modules.quotes.router import router as quotes_router
+from app.modules.stats.router import router as stats_router
 from app.modules.users.router import router as users_router
 
 app = FastAPI(title="BookSpace API")
@@ -36,6 +37,7 @@ app.include_router(catalog_router)
 app.include_router(entries_router)
 app.include_router(quotes_router)
 app.include_router(library_router)
+app.include_router(stats_router)
 app.include_router(media_router)
 app.include_router(bot_router)
 
