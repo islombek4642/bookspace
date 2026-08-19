@@ -1,57 +1,60 @@
-import { NavLink } from "react-router-dom";
+import { BarChart3, Heart, Library, LucideIcon, Plus, User } from "lucide-react";
+import { NavLink, useLocation } from "react-router-dom";
 
-const LEFT_ITEMS = [
-  { to: "/", label: "Kutubxona" },
-  { to: "/rating", label: "Reyting" },
+interface NavItemConfig {
+  to: string;
+  label: string;
+  icon: LucideIcon;
+}
+
+const NAV_ITEMS: NavItemConfig[] = [
+  { to: "/", label: "Kutubxona", icon: Library },
+  { to: "/rating", label: "Reyting", icon: BarChart3 },
+  { to: "/add-book", label: "Qo'shish", icon: Plus },
+  { to: "/favorites", label: "Sevimlilar", icon: Heart },
+  { to: "/profile", label: "Profil", icon: User },
 ];
 
-const RIGHT_ITEMS = [
-  { to: "/favorites", label: "Sevimlilar" },
-  { to: "/profile", label: "Profil" },
-];
+function isItemActive(pathname: string, to: string): boolean {
+  return to === "/" ? pathname === "/" : pathname === to;
+}
 
-function NavItem({ to, label }: { to: string; label: string }) {
+function NavItem({ to, label, icon: Icon, active }: NavItemConfig & { active: boolean }) {
   return (
-    <NavLink
-      to={to}
-      end={to === "/"}
-      className={({ isActive }) =>
-        `flex flex-1 items-center justify-center rounded-full py-1.5 text-sm transition-colors ${
-          isActive ? "bg-amber-50 font-semibold text-amber-800" : "text-stone-500"
-        }`
-      }
-    >
-      {label}
+    <NavLink to={to} aria-label={label} className="relative flex flex-col items-center justify-center">
+      <Icon
+        className={`h-6 w-6 transition-transform duration-500 ${
+          active ? "-translate-y-7 text-white" : "text-stone-500"
+        }`}
+      />
+      <span
+        className={`text-[10px] font-semibold text-amber-800 transition-opacity duration-500 ${
+          active ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        {label}
+      </span>
     </NavLink>
   );
 }
 
 export function BottomNav() {
+  const location = useLocation();
+  const activeIndex = NAV_ITEMS.findIndex((item) => isItemActive(location.pathname, item.to));
+
   return (
-    <nav className="fixed bottom-0 left-0 right-0 flex items-center rounded-t-2xl border-t border-stone-200 bg-white px-2 py-2 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
-      <div className="flex flex-1 pr-8">
-        {LEFT_ITEMS.map((item) => (
-          <NavItem key={item.to} {...item} />
-        ))}
-      </div>
+    <nav className="relative grid h-16 grid-cols-5 rounded-t-2xl border-t border-stone-200 bg-white shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+      {activeIndex !== -1 && (
+        <div
+          data-testid="nav-indicator"
+          className="pointer-events-none absolute -top-7 h-14 w-14 -translate-x-1/2 rounded-full border-[6px] border-stone-50 bg-amber-800 shadow-lg transition-[left] duration-500 before:absolute before:top-1/2 before:-left-[18px] before:h-4 before:w-4 before:rounded-tr-2xl before:shadow-[1px_-8px_0_theme(colors.stone.50)] before:content-[''] after:absolute after:top-1/2 after:-right-[18px] after:h-4 after:w-4 after:rounded-tl-2xl after:shadow-[-1px_-8px_0_theme(colors.stone.50)] after:content-['']"
+          style={{ left: `calc(20% * ${activeIndex} + 10%)` }}
+        />
+      )}
 
-      <div className="flex flex-1 pl-8">
-        {RIGHT_ITEMS.map((item) => (
-          <NavItem key={item.to} {...item} />
-        ))}
-      </div>
-
-      {/* Positioned independently of the two nav-item groups above, so
-          differing label widths on each side can never pull it off-center. */}
-      <NavLink
-        to="/add-book"
-        aria-label="Qo'shish"
-        className="absolute left-1/2 -top-6 flex h-14 w-14 -translate-x-1/2 items-center justify-center rounded-full bg-amber-800 text-white shadow-lg transition-transform hover:bg-amber-900 active:scale-95"
-      >
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2.5} strokeLinecap="round" className="h-7 w-7">
-          <path d="M12 5v14M5 12h14" />
-        </svg>
-      </NavLink>
+      {NAV_ITEMS.map((item, index) => (
+        <NavItem key={item.to} {...item} active={index === activeIndex} />
+      ))}
     </nav>
   );
 }
