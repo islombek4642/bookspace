@@ -81,6 +81,72 @@ describe("AddBookPage", () => {
     expect(placeholderButton.querySelector("svg")).toBeInTheDocument();
   });
 
+  it("does not add the book until Saqlash is pressed after picking a search result", async () => {
+    const results = [
+      { external_id: "1", title: "Dune", author: "Frank Herbert", cover_url: null, description: null },
+    ];
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(new Response(JSON.stringify(results), { status: 200 })) // search
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: 42, source: "external_api", title: "Dune" }), { status: 200 })) // book create
+      .mockResolvedValueOnce(new Response(JSON.stringify({ id: 900 }), { status: 200 })); // entry create
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/add-book"]}>
+        <Routes>
+          <Route path="/add-book" element={<AddBookPage />} />
+          <Route path="/read/:id" element={<div>Entry page 900</div>} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.type(screen.getByPlaceholderText("Kitob nomini kiriting"), "Dune");
+    await user.click(screen.getByRole("button", { name: "Qidirish" }));
+
+    await user.click(await screen.findByRole("button", { name: /Dune/ }));
+
+    // Picking a result only shows a confirmation step -- no book/entry API calls yet.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", { name: "Saqlash" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Saqlash" }));
+
+    await waitFor(() => expect(screen.getByText("Entry page 900")).toBeInTheDocument());
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    const [, entryCallOptions] = fetchMock.mock.calls[2];
+    expect(JSON.parse(entryCallOptions.body as string)).toEqual({ book_id: 42, status: "reading" });
+  });
+
+  it("returns to the results list without adding anything when Bekor qilish is pressed", async () => {
+    const results = [
+      { external_id: "1", title: "Dune", author: "Frank Herbert", cover_url: null, description: null },
+    ];
+    const fetchMock = vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(results), { status: 200 }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/add-book"]}>
+        <Routes>
+          <Route path="/add-book" element={<AddBookPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.type(screen.getByPlaceholderText("Kitob nomini kiriting"), "Dune");
+    await user.click(screen.getByRole("button", { name: "Qidirish" }));
+    await user.click(await screen.findByRole("button", { name: /Dune/ }));
+
+    await user.click(screen.getByRole("button", { name: "Bekor qilish" }));
+
+    expect(screen.getByRole("button", { name: /Dune/ })).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   it("shows an error message when the search request fails", async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(
       new Response(JSON.stringify({ error_key: "error.unknown", message: "Server xatosi" }), { status: 500 })

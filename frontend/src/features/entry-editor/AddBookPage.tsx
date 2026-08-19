@@ -49,14 +49,16 @@ export function AddBookPage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<BookSearchResult[]>([]);
   const [searched, setSearched] = useState(false);
+  const [selectedResult, setSelectedResult] = useState<BookSearchResult | null>(null);
+  const [selectedStatus, setSelectedStatus] = useState("reading");
   const [manualTitle, setManualTitle] = useState("");
   const [manualAuthor, setManualAuthor] = useState("");
   const [manualCoverFile, setManualCoverFile] = useState<File | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function startEntryFor(book: Book) {
-    const entry = await apiClient.post<Entry>("/entries", { book_id: book.id, status: "reading" });
+  async function startEntryFor(book: Book, status: string) {
+    const entry = await apiClient.post<Entry>("/entries", { book_id: book.id, status });
     navigate(`/read/${entry.id}`);
   }
 
@@ -76,13 +78,19 @@ export function AddBookPage() {
     }
   }
 
-  async function handleSelectResult(result: BookSearchResult) {
-    if (submitting) return;
+  function handlePickResult(result: BookSearchResult) {
+    setError(null);
+    setSelectedStatus("reading");
+    setSelectedResult(result);
+  }
+
+  async function handleConfirmSelection() {
+    if (submitting || !selectedResult) return;
     setSubmitting(true);
     setError(null);
     try {
-      const book = await apiClient.post<Book>("/catalog/books/from-search", result);
-      await startEntryFor(book);
+      const book = await apiClient.post<Book>("/catalog/books/from-search", selectedResult);
+      await startEntryFor(book, selectedStatus);
     } catch {
       setError("Kitobni qo'shishda xatolik yuz berdi.");
       setSubmitting(false);
@@ -105,11 +113,65 @@ export function AddBookPage() {
         author: manualAuthor || null,
         cover_url: coverUrl,
       });
-      await startEntryFor(book);
+      await startEntryFor(book, "reading");
     } catch {
       setError("Kitobni qo'shishda xatolik yuz berdi.");
       setSubmitting(false);
     }
+  }
+
+  if (selectedResult) {
+    return (
+      <div className="space-y-6 p-4">
+        <div className="flex items-center gap-3 rounded-xl border border-stone-200 p-3">
+          <SearchResultCover coverUrl={selectedResult.cover_url} title={selectedResult.title} />
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold">{selectedResult.title}</p>
+            {selectedResult.author && <p className="text-sm text-stone-500">{selectedResult.author}</p>}
+          </div>
+        </div>
+
+        <div>
+          <label htmlFor="selected-status" className="mb-1 block text-sm font-medium text-stone-700">
+            Holat
+          </label>
+          <select
+            id="selected-status"
+            value={selectedStatus}
+            onChange={(event) => setSelectedStatus(event.target.value)}
+            className="w-full rounded-xl border border-stone-300 px-3 py-2"
+          >
+            <option value="planned">Rejalashtirilgan</option>
+            <option value="reading">O'qilmoqda</option>
+            <option value="finished">Tugallandi</option>
+          </select>
+        </div>
+
+        {error && <p className="text-red-600">{error}</p>}
+
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setError(null);
+              setSelectedResult(null);
+            }}
+            disabled={submitting}
+            className="flex-1 rounded-full border border-stone-300 px-4 py-2 text-stone-700 transition-colors hover:bg-stone-100 disabled:opacity-50"
+          >
+            Bekor qilish
+          </button>
+          <button
+            type="button"
+            onClick={handleConfirmSelection}
+            disabled={submitting}
+            className="flex-1 rounded-full bg-amber-800 px-4 py-2 text-white transition-colors hover:bg-amber-900 active:scale-[0.98] disabled:opacity-50"
+          >
+            Saqlash
+          </button>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -143,7 +205,7 @@ export function AddBookPage() {
           <li key={result.external_id}>
             <button
               type="button"
-              onClick={() => handleSelectResult(result)}
+              onClick={() => handlePickResult(result)}
               disabled={submitting}
               className="flex w-full items-center gap-3 rounded-xl border border-stone-200 p-3 text-left hover:bg-stone-100 disabled:opacity-50"
             >
