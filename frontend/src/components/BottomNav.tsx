@@ -28,10 +28,12 @@ function NavItem({ to, label }: { to: string; label: string }) {
 
 export function BottomNav() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 flex items-center justify-around border-t border-stone-200 bg-white px-2 py-2">
-      {LEFT_ITEMS.map((item) => (
-        <NavItem key={item.to} {...item} />
-      ))}
+    <nav className="fixed bottom-0 left-0 right-0 flex items-center rounded-t-2xl border-t border-stone-200 bg-white px-2 py-2 shadow-[0_-2px_10px_rgba(0,0,0,0.05)]">
+      <div className="flex flex-1 justify-around">
+        {LEFT_ITEMS.map((item) => (
+          <NavItem key={item.to} {...item} />
+        ))}
+      </div>
 
       <NavLink
         to="/add-book"
@@ -43,9 +45,11 @@ export function BottomNav() {
         </svg>
       </NavLink>
 
-      {RIGHT_ITEMS.map((item) => (
-        <NavItem key={item.to} {...item} />
-      ))}
+      <div className="flex flex-1 justify-around">
+        {RIGHT_ITEMS.map((item) => (
+          <NavItem key={item.to} {...item} />
+        ))}
+      </div>
     </nav>
   );
 }
