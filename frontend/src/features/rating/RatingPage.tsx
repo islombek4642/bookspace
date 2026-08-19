@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+import { LibraryItem, useLibrary } from "../library/useLibrary";
 import { Stats, useStats } from "./useStats";
 
 const MONTH_LABELS = ["Yan", "Fev", "Mar", "Apr", "May", "Iyn", "Iyl", "Avg", "Sen", "Okt", "Noy", "Dek"];
@@ -31,6 +33,54 @@ function MonthlyChart({ monthlyBreakdown }: { monthlyBreakdown: Stats["monthly_b
           </div>
         ))}
       </div>
+    </div>
+  );
+}
+
+function TopRatedBooks() {
+  const { items, loading, error } = useLibrary(false);
+
+  if (loading || error) {
+    return null;
+  }
+
+  const rated = items
+    .filter((item): item is LibraryItem & { rating: number } => item.rating !== null)
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 5);
+
+  if (rated.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="rounded-xl bg-white p-4 shadow-sm">
+      <p className="mb-3 text-xs text-stone-500">Eng yuqori baholangan</p>
+      <ul className="flex flex-col gap-3">
+        {rated.map((item) => (
+          <li key={item.entry_id}>
+            <Link to={`/read/${item.entry_id}`} className="flex items-center gap-3">
+              {item.book_cover_url ? (
+                <img
+                  src={item.book_cover_url}
+                  alt={item.book_title}
+                  className="h-12 w-9 shrink-0 rounded object-cover"
+                  onError={(e) => {
+                    e.currentTarget.style.display = "none";
+                  }}
+                />
+              ) : (
+                <div className="h-12 w-9 shrink-0 rounded bg-stone-100" />
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-stone-900">{item.book_title}</p>
+                {item.book_author && <p className="truncate text-xs text-stone-500">{item.book_author}</p>}
+              </div>
+              <span className="shrink-0 text-sm font-semibold text-amber-800">{item.rating} ★</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
@@ -71,11 +121,14 @@ export function RatingPage() {
 
       {stats.total_finished === 0 ? (
         <p className="p-4 text-center text-stone-500">Hali statistika yo'q — birinchi kitobingizni tugating.</p>
-      ) : stats.monthly_breakdown.every((m) => m.count === 0) ? (
-        <p className="p-4 text-center text-stone-500">So'nggi 12 oyda kitob tugatilmagan.</p>
       ) : (
-        <div className="px-4">
-          <MonthlyChart monthlyBreakdown={stats.monthly_breakdown} />
+        <div className="flex flex-col gap-3 px-4">
+          {stats.monthly_breakdown.every((m) => m.count === 0) ? (
+            <p className="text-center text-stone-500">So'nggi 12 oyda kitob tugatilmagan.</p>
+          ) : (
+            <MonthlyChart monthlyBreakdown={stats.monthly_breakdown} />
+          )}
+          <TopRatedBooks />
         </div>
       )}
     </div>

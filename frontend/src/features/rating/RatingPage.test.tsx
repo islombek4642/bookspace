@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { RatingPage } from "./RatingPage";
 
@@ -16,16 +17,52 @@ function statsResponse(overrides: Record<string, unknown> = {}) {
   };
 }
 
+function libraryItem(overrides: Record<string, unknown> = {}) {
+  return {
+    entry_id: 1,
+    status: "finished",
+    started_at: null,
+    finished_at: "2026-08-01",
+    rating: null,
+    is_favorite: false,
+    updated_at: "2026-08-01T00:00:00Z",
+    book_id: 1,
+    book_title: "Test kitob",
+    book_author: "Muallif",
+    book_cover_url: null,
+    ...overrides,
+  };
+}
+
+function mockFetch(stats: unknown, library: unknown[] = []) {
+  return vi.fn((url: string) => {
+    if (url.includes("/stats")) {
+      return Promise.resolve(new Response(JSON.stringify(stats), { status: 200 }));
+    }
+    if (url.includes("/library")) {
+      return Promise.resolve(new Response(JSON.stringify(library), { status: 200 }));
+    }
+    return Promise.resolve(new Response("{}", { status: 200 }));
+  });
+}
+
+function renderPage() {
+  render(
+    <MemoryRouter>
+      <RatingPage />
+    </MemoryRouter>
+  );
+}
+
 describe("RatingPage", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
   it("shows the empty state and no chart when nothing has been finished", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(statsResponse()), { status: 200 }));
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("fetch", mockFetch(statsResponse()));
 
-    render(<RatingPage />);
+    renderPage();
 
     await waitFor(() =>
       expect(screen.getByText("Hali statistika yo'q — birinchi kitobingizni tugating.")).toBeInTheDocument()
@@ -44,10 +81,9 @@ describe("RatingPage", () => {
         { month: "2026-08", count: 3 },
       ],
     });
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }));
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("fetch", mockFetch(body));
 
-    render(<RatingPage />);
+    renderPage();
 
     await waitFor(() => expect(screen.getByText("5")).toBeInTheDocument());
     expect(screen.getByText("3")).toBeInTheDocument();
@@ -65,10 +101,9 @@ describe("RatingPage", () => {
       finished_this_month: 0,
       average_rating: 4.0,
     });
-    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify(body), { status: 200 }));
-    vi.stubGlobal("fetch", fetchMock);
+    vi.stubGlobal("fetch", mockFetch(body));
 
-    render(<RatingPage />);
+    renderPage();
 
     await waitFor(() => expect(screen.getByText("So'nggi 12 oyda kitob tugatilmagan.")).toBeInTheDocument());
     expect(
@@ -80,8 +115,47 @@ describe("RatingPage", () => {
     const fetchMock = vi.fn().mockRejectedValue(new Error("network error"));
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<RatingPage />);
+    renderPage();
 
     await waitFor(() => expect(screen.getByText("Statistikani yuklab bo'lmadi.")).toBeInTheDocument());
+  });
+
+  it("shows the top 5 rated books, sorted highest first, excluding unrated entries", async () => {
+    const body = statsResponse({
+      total_finished: 4,
+      finished_this_year: 4,
+      finished_this_month: 1,
+      average_rating: 4.0,
+      monthly_breakdown: [{ month: "2026-08", count: 4 }],
+    });
+    const library = [
+      libraryItem({ entry_id: 1, book_title: "Uchinchi", rating: 3 }),
+      libraryItem({ entry_id: 2, book_title: "Birinchi", rating: 5 }),
+      libraryItem({ entry_id: 3, book_title: "Baholanmagan", rating: null }),
+      libraryItem({ entry_id: 4, book_title: "Ikkinchi", rating: 4 }),
+    ];
+    vi.stubGlobal("fetch", mockFetch(body, library));
+
+    renderPage();
+
+    await waitFor(() => expect(screen.getByText("Eng yuqori baholangan")).toBeInTheDocument());
+
+    const titles = screen.getAllByText(/^(Birinchi|Ikkinchi|Uchinchi|Baholanmagan)$/).map((el) => el.textContent);
+    expect(titles).toEqual(["Birinchi", "Ikkinchi", "Uchinchi"]);
+    expect(screen.queryByText("Baholanmagan")).not.toBeInTheDocument();
+
+    const link = screen.getByText("Birinchi").closest("a");
+    expect(link).toHaveAttribute("href", "/read/2");
+  });
+
+  it("does not show the top-rated section when no entries are rated", async () => {
+    const body = statsResponse({ total_finished: 1, finished_this_year: 1, finished_this_month: 1 });
+    const library = [libraryItem({ rating: null })];
+    vi.stubGlobal("fetch", mockFetch(body, library));
+
+    renderPage();
+
+    await waitFor(() => expect(screen.getByText("So'nggi 12 oyda kitob tugatilmagan.")).toBeInTheDocument());
+    expect(screen.queryByText("Eng yuqori baholangan")).not.toBeInTheDocument();
   });
 });
