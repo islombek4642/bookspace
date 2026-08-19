@@ -10,6 +10,30 @@ interface BookSearchResult {
   description: string | null;
 }
 
+function SearchResultCover({ coverUrl, title }: { coverUrl: string | null; title: string }) {
+  const [imgFailed, setImgFailed] = useState(false);
+
+  if (coverUrl && !imgFailed) {
+    return (
+      <img
+        src={coverUrl}
+        alt={title}
+        className="h-16 w-12 shrink-0 rounded-md object-cover shadow-sm"
+        onError={() => setImgFailed(true)}
+      />
+    );
+  }
+
+  return (
+    <div className="flex h-16 w-12 shrink-0 items-center justify-center rounded-md bg-stone-100 text-stone-400">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} className="h-6 w-6">
+        <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15.5a1 1 0 0 1-1 1H6.5A2.5 2.5 0 0 0 4 22V5.5Z" />
+        <path d="M4 19a2.5 2.5 0 0 1 2.5-2.5H19" />
+      </svg>
+    </div>
+  );
+}
+
 interface Book {
   id: number;
   source: string;
@@ -121,10 +145,13 @@ export function AddBookPage() {
               type="button"
               onClick={() => handleSelectResult(result)}
               disabled={submitting}
-              className="w-full rounded-xl border border-stone-200 p-3 text-left hover:bg-stone-100 disabled:opacity-50"
+              className="flex w-full items-center gap-3 rounded-xl border border-stone-200 p-3 text-left hover:bg-stone-100 disabled:opacity-50"
             >
-              <p className="font-semibold">{result.title}</p>
-              {result.author && <p className="text-sm text-stone-500">{result.author}</p>}
+              <SearchResultCover coverUrl={result.cover_url} title={result.title} />
+              <div className="min-w-0 flex-1">
+                <p className="font-semibold">{result.title}</p>
+                {result.author && <p className="text-sm text-stone-500">{result.author}</p>}
+              </div>
             </button>
           </li>
         ))}

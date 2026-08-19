@@ -41,6 +41,46 @@ describe("AddBookPage", () => {
     await waitFor(() => expect(screen.getByText("Entry page 900")).toBeInTheDocument());
   });
 
+  it("shows a cover image for results that have one, and a placeholder for results that don't", async () => {
+    const results = [
+      {
+        external_id: "1",
+        title: "Dune",
+        author: "Frank Herbert",
+        cover_url: "https://books.google.com/dune.jpg",
+        description: null,
+      },
+      {
+        external_id: "2",
+        title: "Noma'lum muqovali kitob",
+        author: null,
+        cover_url: null,
+        description: null,
+      },
+    ];
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(results), { status: 200 })));
+
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/add-book"]}>
+        <Routes>
+          <Route path="/add-book" element={<AddBookPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.type(screen.getByPlaceholderText("Kitob nomini kiriting"), "Dune");
+    await user.click(screen.getByRole("button", { name: "Qidirish" }));
+
+    const coverImg = await screen.findByRole("img", { name: "Dune" });
+    expect(coverImg).toHaveAttribute("src", "https://books.google.com/dune.jpg");
+
+    const placeholderButton = screen.getByRole("button", { name: /Noma'lum muqovali kitob/ });
+    expect(placeholderButton.querySelector("img")).not.toBeInTheDocument();
+    expect(placeholderButton.querySelector("svg")).toBeInTheDocument();
+  });
+
   it("shows an error message when the search request fails", async () => {
     const fetchMock = vi.fn().mockResolvedValueOnce(
       new Response(JSON.stringify({ error_key: "error.unknown", message: "Server xatosi" }), { status: 500 })
