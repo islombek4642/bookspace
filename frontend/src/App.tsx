@@ -9,6 +9,7 @@ import { FavoritesPage } from "./features/favorites/FavoritesPage";
 import { AddBookPage } from "./features/entry-editor/AddBookPage";
 import { EntryDetailPage } from "./features/entry-editor/EntryDetailPage";
 import { ProfilePage } from "./features/profile/ProfilePage";
+import { RatingPage } from "./features/rating/RatingPage";
 import { t } from "./i18n/locale";
 
 function AuthGate({ children }: { children: ReactNode }) {
@@ -31,6 +32,7 @@ function AppRoutes() {
       <Routes>
         <Route path="/" element={<LibraryPage />} />
         <Route path="/favorites" element={<FavoritesPage />} />
+        <Route path="/rating" element={<RatingPage />} />
         <Route path="/add-book" element={<AddBookPage />} />
         <Route path="/read/:id" element={<EntryDetailPage />} />
         <Route path="/profile" element={<ProfilePage />} />
