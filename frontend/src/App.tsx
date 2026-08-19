@@ -3,6 +3,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { TelegramAuthProvider, useAuth } from "./auth/TelegramAuthProvider";
 import { ToastProvider } from "./components/ToastProvider";
 import { BottomNav } from "./components/BottomNav";
+import { VersionWatcher } from "./components/VersionWatcher";
 import { LibraryPage } from "./features/library/LibraryPage";
 import { FavoritesPage } from "./features/favorites/FavoritesPage";
 import { AddBookPage } from "./features/entry-editor/AddBookPage";
@@ -43,6 +44,7 @@ function AppRoutes() {
 function App() {
   return (
     <ToastProvider>
+      <VersionWatcher />
       <TelegramAuthProvider>
         <BrowserRouter>
           <AuthGate>

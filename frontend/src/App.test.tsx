@@ -18,12 +18,18 @@ describe("App", () => {
 
   it("renders the library page once Telegram authentication succeeds", async () => {
     window.Telegram = { WebApp: { initData: "fake-init-data", ready: vi.fn(), expand: vi.fn() } };
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({ access_token: "token", token_type: "bearer" }), { status: 200 })
-      )
-      .mockResolvedValueOnce(new Response(JSON.stringify([]), { status: 200 }));
+    const fetchMock = vi.fn((input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.includes("/auth/telegram")) {
+        return Promise.resolve(
+          new Response(JSON.stringify({ access_token: "token", token_type: "bearer" }), { status: 200 })
+        );
+      }
+      if (url.includes("/version")) {
+        return Promise.resolve(new Response(JSON.stringify({ version: "test" }), { status: 200 }));
+      }
+      return Promise.resolve(new Response(JSON.stringify([]), { status: 200 }));
+    });
     vi.stubGlobal("fetch", fetchMock);
 
     render(<App />);

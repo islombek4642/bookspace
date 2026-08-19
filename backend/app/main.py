@@ -1,3 +1,4 @@
+import hashlib
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Request
@@ -44,6 +45,26 @@ def health() -> dict:
     return {"status": "ok"}
 
 
+def _compute_build_version(static_dir: Path) -> str:
+    # Vite hashes every asset filename by content, so hashing the sorted
+    # filename list changes exactly when a new frontend build lands --
+    # the frontend polls this to detect a stale bundle and reload itself.
+    assets_dir = static_dir / "assets"
+    if not assets_dir.exists():
+        return "dev"
+    names = sorted(path.name for path in assets_dir.iterdir())
+    return hashlib.sha256("".join(names).encode()).hexdigest()[:12]
+
+
+_static_dir = Path(__file__).resolve().parent.parent / "static"
+_build_version = _compute_build_version(_static_dir)
+
+
+@app.get("/version", include_in_schema=False)
+def get_version() -> JSONResponse:
+    return JSONResponse({"version": _build_version}, headers={"Cache-Control": "no-store"})
+
+
 class ImmutableStaticFiles(StaticFiles):
     """Vite gives every asset a content hash in its filename, so a given
     URL's content never changes -- safe to tell browsers (and Telegram's
@@ -82,5 +103,4 @@ def _mount_static_frontend(app: FastAPI, static_dir: Path) -> None:
         return FileResponse(index_file, headers={"Cache-Control": "no-cache, no-store, must-revalidate"})
 
 
-_static_dir = Path(__file__).resolve().parent.parent / "static"
 _mount_static_frontend(app, _static_dir)
