@@ -14,7 +14,7 @@ describe("LibraryPage", () => {
         JSON.stringify([
           {
             entry_id: 1,
-            status: "reading",
+            status: "finished",
             started_at: null,
             finished_at: null,
             rating: null,
