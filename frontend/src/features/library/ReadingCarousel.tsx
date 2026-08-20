@@ -34,7 +34,8 @@ export function ReadingCarousel({ items }: { items: LibraryItem[] }) {
   return (
     <Swiper
       modules={[Autoplay, Pagination]}
-      slidesPerView={1.15}
+      slidesPerView={1.2}
+      centeredSlides
       spaceBetween={12}
       autoplay={{ delay: 4000, disableOnInteraction: false }}
       pagination={{ clickable: true }}
