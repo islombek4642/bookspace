@@ -219,9 +219,13 @@ export function AddBookPage() {
         ))}
       </ul>
 
-      {searched && results.length === 0 && (
+      {searched && (
         <div className="space-y-3 border-t pt-4">
-          <p className="text-stone-600">Kitob topilmadi. Qo'lda qo'shing:</p>
+          <p className="text-stone-600">
+            {results.length === 0
+              ? "Kitob topilmadi. Qo'lda qo'shing:"
+              : "Kerakli kitobni topa olmadingizmi? Qo'lda qo'shing:"}
+          </p>
           <form onSubmit={handleManualSubmit} className="space-y-3">
             <div>
               <label htmlFor="manual-title" className="mb-1 block text-sm font-medium text-stone-700">

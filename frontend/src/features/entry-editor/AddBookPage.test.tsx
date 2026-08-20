@@ -81,6 +81,30 @@ describe("AddBookPage", () => {
     expect(placeholderButton.querySelector("svg")).toBeInTheDocument();
   });
 
+  it("also shows the manual-add form when search results are found, in case none of them match", async () => {
+    const results = [
+      { external_id: "1", title: "Dune", author: "Frank Herbert", cover_url: null, description: null },
+    ];
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValueOnce(new Response(JSON.stringify(results), { status: 200 })));
+
+    const user = userEvent.setup();
+
+    render(
+      <MemoryRouter initialEntries={["/add-book"]}>
+        <Routes>
+          <Route path="/add-book" element={<AddBookPage />} />
+        </Routes>
+      </MemoryRouter>
+    );
+
+    await user.type(screen.getByPlaceholderText("Kitob nomini kiriting"), "Dune");
+    await user.click(screen.getByRole("button", { name: "Qidirish" }));
+
+    expect(await screen.findByRole("button", { name: /Dune/ })).toBeInTheDocument();
+    expect(screen.getByText("Kerakli kitobni topa olmadingizmi? Qo'lda qo'shing:")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Kitob nomi")).toBeInTheDocument();
+  });
+
   it("does not add the book until Saqlash is pressed after picking a search result", async () => {
     const results = [
       { external_id: "1", title: "Dune", author: "Frank Herbert", cover_url: null, description: null },
