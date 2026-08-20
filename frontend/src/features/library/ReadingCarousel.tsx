@@ -1,4 +1,5 @@
 import { Star } from "lucide-react";
+import type { CSSProperties } from "react";
 import { Link } from "react-router-dom";
 import { Autoplay, Pagination } from "swiper/modules";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -11,10 +12,11 @@ const BLOB_RADIUS = "61% 39% 52% 48% / 44% 59% 41% 56%";
 
 function RatingStars({ rating }: { rating: number }) {
   return (
-    <div className="flex gap-0.5">
+    <div className="flex gap-0.5" aria-label={`Baho: ${rating}/5`}>
       {Array.from({ length: 5 }, (_, i) => (
         <Star
           key={i}
+          aria-hidden="true"
           className={`h-3.5 w-3.5 ${i < rating ? "fill-amber-800 text-amber-800" : "fill-none text-stone-300"}`}
         />
       ))}
@@ -36,7 +38,7 @@ export function ReadingCarousel({ items }: { items: LibraryItem[] }) {
       spaceBetween={12}
       autoplay={{ delay: 4000, disableOnInteraction: false }}
       pagination={{ clickable: true }}
-      style={{ "--swiper-pagination-color": "#92400e" } as React.CSSProperties}
+      style={{ "--swiper-pagination-color": "#92400e" } as CSSProperties}
       className="px-4 pb-8 pt-4"
     >
       {reading.map((item) => (

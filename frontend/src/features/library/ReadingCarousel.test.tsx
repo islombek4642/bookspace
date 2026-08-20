@@ -57,8 +57,8 @@ describe("ReadingCarousel", () => {
 
     const ratedCard = screen.getByText("Baholangan").closest("a");
     const unratedCard = screen.getByText("Baholanmagan").closest("a");
-    expect(ratedCard?.querySelectorAll("svg.lucide-star").length).toBe(5);
-    expect(unratedCard?.querySelectorAll("svg.lucide-star").length).toBe(0);
+    expect(ratedCard?.querySelector("[aria-label='Baho: 4/5']")).toBeInTheDocument();
+    expect(unratedCard?.querySelector("[aria-label^='Baho:']")).not.toBeInTheDocument();
   });
 
   it("renders nothing when no entries have status 'reading'", () => {
